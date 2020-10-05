@@ -27,7 +27,7 @@ class AppKernel extends Kernel
 {
     public function registerBundlesToCollection(BundleCollection $collection)
     {
-        $collection->addBundle(new SocialData\Connector\Facebook\SocialDataInstagramConnectorBundle());
+        $collection->addBundle(new SocialData\Connector\Instagram\SocialDataInstagramConnectorBundle());
     }
 }
 ```
@@ -73,7 +73,6 @@ Otherwise, you'll receive an error message. You may then need to repeat the conn
 
 | Name | Description
 |------|----------------------|
-| `Page Id` | Defines which page entries should be imported |
 | `Limit` | Define a limit to restrict the amount of social posts to import (Default: 50) |
 
 ## Copyright and license
