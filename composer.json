@@ -1,0 +1,32 @@
+{
+    "name": "dachcom-digital/social-data-instagram-connector",
+    "type": "pimcore-social-data-connector-bundle",
+    "license": "GPL-3.0-or-later",
+    "description": "Pimcore Social Data Instagram Connector",
+    "keywords": [
+        "pimcore",
+        "social",
+        "feed",
+        "social wall",
+        "instagram"
+    ],
+    "homepage": "https://github.com/dachcom-digital/pimcore-social-data-instagram-connectorm",
+    "authors": [
+        {
+            "name": "DACHCOM.DIGITAL Stefan Hagspiel",
+            "email": "shagspiel@dachcom.ch",
+            "homepage": "http://www.dachcom.com/",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "SocialData\\Connector\\Instagram\\": "src"
+        }
+    },
+    "require": {
+        "facebook/graph-sdk": "^5.4",
+        "espresso-dev/instagram-basic-display-php": "~1.1.0",
+        "dachcom-digital/social-data": "^1.0"
+    }
+}

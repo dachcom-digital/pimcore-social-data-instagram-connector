@@ -1,0 +1,7 @@
+social_data_connector_instagram_connect:
+    path: /admin/social-data/connector/instagram/connect
+    defaults: { _controller: SocialData\Connector\Instagram\Controller\Admin\InstagramController::connectAction }
+
+social_data_connector_instagram_connect_check:
+    path: /admin/social-data/connector/instagram/check
+    defaults: { _controller: SocialData\Connector\Instagram\Controller\Admin\InstagramController::checkAction }

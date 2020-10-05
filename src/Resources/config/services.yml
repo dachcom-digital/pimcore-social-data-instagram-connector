@@ -1,0 +1,40 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ## Definition
+
+    SocialData\Connector\Instagram\Definition\ConnectorDefinition:
+        tags:
+            - {
+                name: social_data.connector_definition,
+                identifier: instagram,
+                socialPostBuilder: SocialData\Connector\Instagram\Builder\SocialPostBuilder
+            }
+
+    ## Social Post Builder
+
+    SocialData\Connector\Instagram\Builder\SocialPostBuilder: ~
+
+    ## API
+
+    SocialData\Connector\Instagram\Client\InstagramClient: ~
+
+    ## Form
+
+    SocialData\Connector\Instagram\Form\Admin\Type\InstagramEngineType:
+        tags:
+            - { name: form.type }
+
+    SocialData\Connector\Instagram\Form\Admin\Type\InstagramFeedType:
+        tags:
+            - { name: form.type }
+
+    ## Controller
+
+    SocialData\Connector\Instagram\Controller\Admin\InstagramController:
+        calls:
+            - [setContainer, ['@service_container']]
