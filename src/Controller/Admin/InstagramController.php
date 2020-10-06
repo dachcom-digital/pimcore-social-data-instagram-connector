@@ -4,8 +4,9 @@ namespace SocialData\Connector\Instagram\Controller\Admin;
 
 use Pimcore\Bundle\AdminBundle\Controller\AdminController;
 use SocialData\Connector\Instagram\Client\InstagramClient;
-use SocialData\Connector\Instagram\Exception\ClientException;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
+use SocialDataBundle\Controller\Admin\Traits\ConnectResponseTrait;
+use SocialDataBundle\Exception\ConnectException;
 use SocialDataBundle\Service\ConnectorServiceInterface;
 use SocialDataBundle\Service\EnvironmentServiceInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -15,6 +16,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class InstagramController extends AdminController
 {
+    use ConnectResponseTrait;
+
     /**
      * @var InstagramClient
      */
@@ -58,15 +61,7 @@ class InstagramController extends AdminController
         try {
             $connectorEngineConfig = $this->getConnectorEngineConfig();
         } catch (\Throwable $e) {
-            return $this->render('@SocialData/connect-layout.html.twig', [
-                'content' => [
-                    'error'       => true,
-                    'code'        => 500,
-                    'identifier'  => 'general_error',
-                    'reason'      => 'connector engine configuration error',
-                    'description' => $e->getMessage()
-                ]
-            ]);
+            return $this->buildConnectErrorResponse(500, 'general_error', 'connector engine configuration error', $e->getMessage());
         }
 
         try {
@@ -76,15 +71,7 @@ class InstagramController extends AdminController
         }
 
         if ($error !== null) {
-            return $this->render('@SocialData/connect-layout.html.twig', [
-                'content' => [
-                    'error'       => true,
-                    'code'        => 500,
-                    'identifier'  => 'general_error',
-                    'reason'      => sprintf('connect error with api type "%s"', $connectorEngineConfig->getApiType()),
-                    'description' => $error
-                ]
-            ]);
+            return $this->buildConnectErrorResponse(500, 'general_error', sprintf('connect error with api type "%s"', $connectorEngineConfig->getApiType()), $error);
         }
 
         return $this->redirect($redirectUrl);
@@ -102,52 +89,24 @@ class InstagramController extends AdminController
         try {
             $connectorEngineConfig = $this->getConnectorEngineConfig();
         } catch (\Throwable $e) {
-            return $this->render('@SocialData/connect-layout.html.twig', [
-                'content' => [
-                    'error'       => true,
-                    'code'        => 500,
-                    'identifier'  => 'general_error',
-                    'reason'      => 'connector engine configuration error',
-                    'description' => $e->getMessage()
-                ]
-            ]);
+            return $this->buildConnectErrorResponse(500, 'general_error', 'connector engine configuration error', $e->getMessage());
         }
 
         try {
             $tokenData = $this->instagramClient->generateAccessTokenFromRequest($connectorEngineConfig, $request);
-        } catch (ClientException $e) {
-            return $this->render('@SocialData/connect-layout.html.twig', [
-                'content' => [
-                    'error'       => true,
-                    'code'        => $e->getCode(),
-                    'identifier'  => $e->getIdentifier(),
-                    'reason'      => $e->getReason(),
-                    'description' => $e->getMessage()
-                ]
-            ]);
+        } catch (ConnectException $e) {
+            return $this->buildConnectErrorByExceptionResponse($e);
         }
 
         if (!is_array($tokenData)) {
-            return $this->render('@SocialData/connect-layout.html.twig', [
-                'content' => [
-                    'error'       => true,
-                    'code'        => 500,
-                    'identifier'  => 'general_error',
-                    'reason'      => 'empty token data',
-                    'description' => 'could not generate token data'
-                ]
-            ]);
+            return $this->buildConnectErrorResponse(500, 'general_error', 'empty token data', 'could not generate token data');
         }
 
         $connectorEngineConfig->setAccessToken($tokenData['token']);
         $connectorEngineConfig->setAccessTokenExpiresAt($tokenData['expiresAt']);
         $this->connectorService->updateConnectorEngineConfiguration('instagram', $connectorEngineConfig);
 
-        return $this->render('@SocialData/connect-layout.html.twig', [
-            'content' => [
-                'error' => false
-            ]
-        ]);
+        return $this->buildConnectSuccessResponse();
     }
 
     /**

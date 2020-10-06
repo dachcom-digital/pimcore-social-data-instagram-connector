@@ -3,13 +3,13 @@
 namespace SocialData\Connector\Instagram\Client;
 
 use Carbon\Carbon;
-use EspressoDev\InstagramBasicDisplay\InstagramBasicDisplayException;
 use Facebook\Facebook;
 use Facebook\Exceptions\FacebookSDKException;
 use EspressoDev\InstagramBasicDisplay\InstagramBasicDisplay;
-use SocialData\Connector\Instagram\Exception\ClientException;
+use EspressoDev\InstagramBasicDisplay\InstagramBasicDisplayException;
 use SocialData\Connector\Instagram\Session\InstagramDataHandler;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
+use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -44,7 +44,7 @@ class InstagramClient
      *
      * @return string|null
      *
-     * @throws ClientException
+     * @throws ConnectException
      */
     public function generateRedirectUrl(EngineConfiguration $connectorEngineConfiguration)
     {
@@ -60,7 +60,7 @@ class InstagramClient
                 $redirectUrl = $helper->getLoginUrl($this->generateConnectUri(), ['pages_show_list', 'instagram_basic']);
             }
         } catch (\Throwable $e) {
-            throw new ClientException($e->getMessage(), 500, 'general_error', 'redirect url generation error');
+            throw new ConnectException($e->getMessage(), 500, 'general_error', 'redirect url generation error');
         }
 
         return $redirectUrl;
@@ -72,7 +72,7 @@ class InstagramClient
      *
      * @return array|null
      *
-     * @throws ClientException
+     * @throws ConnectException
      */
     public function generateAccessTokenFromRequest(EngineConfiguration $connectorEngineConfiguration, Request $request)
     {
@@ -83,7 +83,7 @@ class InstagramClient
             try {
                 $accessToken = $client->getOAuthToken($request->query->get('code'));
             } catch (\Throwable $e) {
-                throw new ClientException($e->getMessage(), 500, 'general_error', 'oauth token access error');
+                throw new ConnectException($e->getMessage(), 500, 'general_error', 'oauth token access error');
             }
 
             $responseData = $this->parseBasicResponse($accessToken, ['access_token']);
@@ -91,7 +91,7 @@ class InstagramClient
             try {
                 $longLivedToken = $client->getLongLivedToken($responseData['access_token']);
             } catch (\Throwable $e) {
-                throw new ClientException($e->getMessage(), 500, 'general_error', 'oauth long live token exchange access token error');
+                throw new ConnectException($e->getMessage(), 500, 'general_error', 'oauth long live token exchange access token error');
             }
 
             $responseData = $this->parseBasicResponse($longLivedToken, ['access_token', 'expires_in']);
@@ -111,11 +111,11 @@ class InstagramClient
                 $helper = $client->getRedirectLoginHelper();
                 $accessToken = $helper->getAccessToken();
             } catch (\Throwable $e) {
-                throw new ClientException($e->getMessage(), 500, 'general_error', 'token access error');
+                throw new ConnectException($e->getMessage(), 500, 'general_error', 'token access error');
             }
 
             if (empty($accessToken)) {
-                throw new ClientException(
+                throw new ConnectException(
                     $helper->getError() ? $helper->getErrorDescription() : $request->query->get('error_message', 'Unknown Error'),
                     $helper->getError() ? $helper->getErrorCode() : 500,
                     $helper->getError() ? $helper->getError() : 'general_error',
@@ -127,7 +127,7 @@ class InstagramClient
                 $oAuth2Client = $client->getOAuth2Client();
                 $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
             } catch (FacebookSDKException $e) {
-                throw new ClientException($e->getMessage(), 500, 'general_error', 'long lived access token error');
+                throw new ConnectException($e->getMessage(), 500, 'general_error', 'long lived access token error');
             }
 
             return [
@@ -149,7 +149,7 @@ class InstagramClient
      *
      * @return InstagramBasicDisplay|Facebook
      *
-     * @throws ClientException
+     * @throws ConnectException
      */
     public function getClient(EngineConfiguration $connectorEngineConfiguration)
     {
@@ -164,10 +164,10 @@ class InstagramClient
             }
 
         } catch (\Throwable $e) {
-            throw new ClientException($e->getMessage(), 500, 'general_error', sprintf('client %s setup error', $connectorEngineConfiguration->getApiType()));
+            throw new ConnectException($e->getMessage(), 500, 'general_error', sprintf('client %s setup error', $connectorEngineConfiguration->getApiType()));
         }
 
-        throw new ClientException(sprintf('Invalid api type "%s"', $connectorEngineConfiguration->getApiType()), 500, 'general_error', 'client setup error');
+        throw new ConnectException(sprintf('Invalid api type "%s"', $connectorEngineConfiguration->getApiType()), 500, 'general_error', 'client setup error');
     }
 
     /**
@@ -218,23 +218,23 @@ class InstagramClient
      * @param array          $expectedValues
      *
      * @return array
-     * @throws ClientException
+     * @throws ConnectException
      */
     protected function parseBasicResponse(?\stdClass $response, array $expectedValues)
     {
         if (!$response instanceof \stdClass) {
-            throw new ClientException('basic response is empty', 500, 'parse_error', 'basic response error');
+            throw new ConnectException('basic response is empty', 500, 'parse_error', 'basic response error');
         }
 
         if (property_exists($response, 'error_message')) {
             $code = property_exists($response, 'code') ? $response->code : 500;
             $errorType = property_exists($response, 'error_type') ? $response->error_type : 'oauth_error';
-            throw new ClientException($response->error_message, $code, 'api_response_error', $errorType);
+            throw new ConnectException($response->error_message, $code, 'api_response_error', $errorType);
         }
 
         foreach ($expectedValues as $expectedValue) {
             if (!property_exists($response, $expectedValue)) {
-                throw new ClientException(sprintf('expected value "%s" missing in response', $expectedValue), 500, 'api_response_error', 'wrong response values');
+                throw new ConnectException(sprintf('expected value "%s" missing in response', $expectedValue), 500, 'api_response_error', 'wrong response values');
             }
         }
 

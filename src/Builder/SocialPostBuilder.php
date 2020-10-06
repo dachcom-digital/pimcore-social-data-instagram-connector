@@ -3,7 +3,6 @@
 namespace SocialData\Connector\Instagram\Builder;
 
 use Carbon\Carbon;
-use SocialData\Connector\Instagram\Exception\ClientException;
 use SocialDataBundle\Dto\BuildConfig;
 use SocialDataBundle\Dto\FetchData;
 use SocialDataBundle\Dto\FilterData;
@@ -13,6 +12,7 @@ use SocialDataBundle\Connector\SocialPostBuilderInterface;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialData\Connector\Instagram\Model\FeedConfiguration;
 use SocialData\Connector\Instagram\Client\InstagramClient;
+use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SocialPostBuilder implements SocialPostBuilderInterface
@@ -60,7 +60,7 @@ class SocialPostBuilder implements SocialPostBuilderInterface
         try {
             $client = $this->instagramClient->getClient($engineConfiguration);
             $client->setAccessToken($engineConfiguration->getAccessToken());
-        } catch (ClientException $e) {
+        } catch (ConnectException $e) {
             throw new BuildException(sprintf('instagram client error: %s', $e->getMessage()));
         }
 
