@@ -130,9 +130,24 @@ class InstagramClient
                 throw new ConnectException($e->getMessage(), 500, 'general_error', 'long lived access token error');
             }
 
+            try {
+                // @todo: really? Dispatch the /me/accounts request to make the user token finally ever lasting.
+                $response = ($client->get('/me/accounts?fields=access_token', $accessToken->getValue()))->getDecodedBody();
+            } catch (FacebookSDKException $e) {
+                // we don't need to fail here.
+                // in worst case this means only we don't have a never expiring token
+            }
+
+            $accessTokenMetadata = $client->getOAuth2Client()->debugToken($accessToken->getValue());
+
+            $expiresAt = null;
+            if ($accessTokenMetadata->getExpiresAt() instanceof \DateTime) {
+                $expiresAt = $accessTokenMetadata->getExpiresAt();
+            }
+
             return [
                 'token'     => $accessToken->getValue(),
-                'expiresAt' => $accessToken->getExpiresAt()
+                'expiresAt' => $expiresAt
             ];
         }
 

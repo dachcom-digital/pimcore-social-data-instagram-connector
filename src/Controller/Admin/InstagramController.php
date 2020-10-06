@@ -102,8 +102,8 @@ class InstagramController extends AdminController
             return $this->buildConnectErrorResponse(500, 'general_error', 'empty token data', 'could not generate token data');
         }
 
-        $connectorEngineConfig->setAccessToken($tokenData['token']);
-        $connectorEngineConfig->setAccessTokenExpiresAt($tokenData['expiresAt']);
+        $connectorEngineConfig->setAccessToken($tokenData['token'], true);
+        $connectorEngineConfig->setAccessTokenExpiresAt($tokenData['expiresAt'], true);
         $this->connectorService->updateConnectorEngineConfiguration('instagram', $connectorEngineConfig);
 
         return $this->buildConnectSuccessResponse();
