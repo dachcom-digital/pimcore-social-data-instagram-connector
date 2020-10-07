@@ -26,6 +26,8 @@ SocialData.Feed.Instagram = Class.create(SocialData.Feed.AbstractFeed, {
                 value: this.data !== null ? this.data['limit'] : null,
                 fieldLabel: t('social_data.wall.feed.instagram.limit'),
                 name: 'limit',
+                maxValue: 99,
+                minValue: 0,
                 labelAlign: 'left',
                 anchor: '100%',
                 flex: 1
