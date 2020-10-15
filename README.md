@@ -1,4 +1,4 @@
-# Pimcore Social Data - Facbook Connector
+# Pimcore Social Data - Instagramm Connector
 
 This Connector allows you to fetch social posts from Instagram. 
 Before you start be sure you've checked out the [Setup Instructions](../00_Setup.md).
