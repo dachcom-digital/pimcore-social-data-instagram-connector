@@ -9,6 +9,7 @@ use EspressoDev\InstagramBasicDisplay\InstagramBasicDisplay;
 use EspressoDev\InstagramBasicDisplay\InstagramBasicDisplayException;
 use SocialData\Connector\Instagram\Session\InstagramDataHandler;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
+use SocialDataBundle\Connector\ConnectorDefinitionInterface;
 use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -40,24 +41,25 @@ class InstagramClient
     }
 
     /**
-     * @param EngineConfiguration $connectorEngineConfiguration
+     * @param EngineConfiguration          $connectorEngineConfiguration
+     * @param ConnectorDefinitionInterface $connectorDefinition
      *
      * @return string|null
      *
      * @throws ConnectException
      */
-    public function generateRedirectUrl(EngineConfiguration $connectorEngineConfiguration)
+    public function generateRedirectUrl(EngineConfiguration $connectorEngineConfiguration, ConnectorDefinitionInterface $connectorDefinition)
     {
         $redirectUrl = null;
         $client = $this->getClient($connectorEngineConfiguration);
+        $definitionConfiguration = $connectorDefinition->getDefinitionConfiguration();
 
         try {
             if ($client instanceof InstagramBasicDisplay) {
                 $redirectUrl = $client->getLoginUrl();
             } elseif ($client instanceof Facebook) {
                 $helper = $client->getRedirectLoginHelper();
-                // @todo: make this configurable (e.g. via connector config?)
-                $redirectUrl = $helper->getLoginUrl($this->generateConnectUri(), ['pages_show_list', 'instagram_basic']);
+                $redirectUrl = $helper->getLoginUrl($this->generateConnectUri(), $definitionConfiguration['api_connect_permission_business']);
             }
         } catch (\Throwable $e) {
             throw new ConnectException($e->getMessage(), 500, 'general_error', 'redirect url generation error');

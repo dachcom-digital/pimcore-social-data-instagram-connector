@@ -75,6 +75,21 @@ Otherwise, you'll receive an error message. You may then need to repeat the conn
 |------|----------------------|
 | `Limit` | Define a limit to restrict the amount of social posts to import (Default: 50) |
 
+## Extended Connector Configuration
+Normally you don't need to modify connector (`connector_config`) configuration, so most of the time you can skip this step.
+However, if you need to change some core setting of a connector, you're able to change them of course.
+
+```yaml
+# app/config/config.yml
+social_data:
+    available_connectors:
+        -   connector_name: instagram
+            connector_config:
+                api_connect_permission_business: ['pages_show_list', 'instagram_basic'] # default value
+```
+
+***
+
 ## Copyright and license
 Copyright: [DACHCOM.DIGITAL](http://dachcom-digital.ch)  
 For licensing details please visit [LICENSE.md](LICENSE.md)  

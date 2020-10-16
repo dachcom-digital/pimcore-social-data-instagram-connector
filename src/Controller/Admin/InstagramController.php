@@ -5,6 +5,7 @@ namespace SocialData\Connector\Instagram\Controller\Admin;
 use Pimcore\Bundle\AdminBundle\Controller\AdminController;
 use SocialData\Connector\Instagram\Client\InstagramClient;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
+use SocialDataBundle\Connector\ConnectorDefinitionInterface;
 use SocialDataBundle\Controller\Admin\Traits\ConnectResponseTrait;
 use SocialDataBundle\Exception\ConnectException;
 use SocialDataBundle\Service\ConnectorServiceInterface;
@@ -59,13 +60,14 @@ class InstagramController extends AdminController
         $redirectUrl = null;
 
         try {
-            $connectorEngineConfig = $this->getConnectorEngineConfig();
+            $connectorDefinition = $this->getConnectorDefinition();
+            $connectorEngineConfig = $this->getConnectorEngineConfig($connectorDefinition);
         } catch (\Throwable $e) {
             return $this->buildConnectErrorResponse(500, 'general_error', 'connector engine configuration error', $e->getMessage());
         }
 
         try {
-            $redirectUrl = $this->instagramClient->generateRedirectUrl($connectorEngineConfig);
+            $redirectUrl = $this->instagramClient->generateRedirectUrl($connectorEngineConfig, $connectorDefinition);
         } catch (\Throwable $e) {
             $error = $e->getMessage();
         }
@@ -87,7 +89,7 @@ class InstagramController extends AdminController
     public function checkAction(Request $request)
     {
         try {
-            $connectorEngineConfig = $this->getConnectorEngineConfig();
+            $connectorEngineConfig = $this->getConnectorEngineConfig($this->getConnectorDefinition());
         } catch (\Throwable $e) {
             return $this->buildConnectErrorResponse(500, 'general_error', 'connector engine configuration error', $e->getMessage());
         }
@@ -110,9 +112,9 @@ class InstagramController extends AdminController
     }
 
     /**
-     * @return EngineConfiguration
+     * @return ConnectorDefinitionInterface
      */
-    protected function getConnectorEngineConfig()
+    protected function getConnectorDefinition()
     {
         $connectorDefinition = $this->connectorService->getConnectorDefinition('instagram', true);
 
@@ -120,6 +122,16 @@ class InstagramController extends AdminController
             throw new HttpException(400, 'Engine is not loaded.');
         }
 
+        return $connectorDefinition;
+    }
+
+    /**
+     * @param ConnectorDefinitionInterface $connectorDefinition
+     *
+     * @return EngineConfiguration
+     */
+    protected function getConnectorEngineConfig(ConnectorDefinitionInterface $connectorDefinition)
+    {
         $connectorEngineConfig = $connectorDefinition->getEngineConfiguration();
         if (!$connectorEngineConfig instanceof EngineConfiguration) {
             throw new HttpException(400, 'Invalid instagram configuration. Please configure your connector "instagram" in backend first.');
