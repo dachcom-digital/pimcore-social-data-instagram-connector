@@ -2,7 +2,8 @@
 
 namespace SocialData\Connector\Instagram\Builder;
 
-use Carbon\Carbon;
+use SocialData\Connector\Instagram\Builder\Type\BusinessBuilder;
+use SocialData\Connector\Instagram\Builder\Type\PrivateBuilder;
 use SocialDataBundle\Dto\BuildConfig;
 use SocialDataBundle\Dto\FetchData;
 use SocialDataBundle\Dto\FilterData;
@@ -10,9 +11,7 @@ use SocialDataBundle\Dto\TransformData;
 use SocialDataBundle\Exception\BuildException;
 use SocialDataBundle\Connector\SocialPostBuilderInterface;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
-use SocialData\Connector\Instagram\Model\FeedConfiguration;
 use SocialData\Connector\Instagram\Client\InstagramClient;
-use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SocialPostBuilder implements SocialPostBuilderInterface
@@ -23,10 +22,16 @@ class SocialPostBuilder implements SocialPostBuilderInterface
     protected $instagramClient;
 
     /**
+     * @var array
+     */
+    protected $typedBuilders;
+
+    /**
      * @param InstagramClient $instagramClient
      */
     public function __construct(InstagramClient $instagramClient)
     {
+        $this->typedBuilders = [];
         $this->instagramClient = $instagramClient;
     }
 
@@ -35,7 +40,10 @@ class SocialPostBuilder implements SocialPostBuilderInterface
      */
     public function configureFetch(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
-        // nothing to configure so far.
+        /** @var EngineConfiguration $engineConfiguration */
+        $engineConfiguration = $buildConfig->getEngineConfiguration();
+
+        $this->dispatch('configureFetch', $engineConfiguration->getApiType(), [$buildConfig, $resolver]);
     }
 
     /**
@@ -43,59 +51,10 @@ class SocialPostBuilder implements SocialPostBuilderInterface
      */
     public function fetch(FetchData $data): void
     {
-        $options = $data->getOptions();
-        $buildConfig = $data->getBuildConfig();
+        /** @var EngineConfiguration $engineConfiguration */
+        $engineConfiguration = $data->getBuildConfig()->getEngineConfiguration();
 
-        $engineConfiguration = $buildConfig->getEngineConfiguration();
-        $feedConfiguration = $buildConfig->getFeedConfiguration();
-
-        if (!$feedConfiguration instanceof FeedConfiguration) {
-            return;
-        }
-
-        if (!$engineConfiguration instanceof EngineConfiguration) {
-            return;
-        }
-
-        try {
-            $client = $this->instagramClient->getClient($engineConfiguration);
-            $client->setAccessToken($engineConfiguration->getAccessToken());
-        } catch (ConnectException $e) {
-            throw new BuildException(sprintf('instagram client error: %s', $e->getMessage()));
-        }
-
-        $limit = is_numeric($feedConfiguration->getLimit()) ? $feedConfiguration->getLimit() : 50;
-
-        try {
-            $response = $client->getUserMedia('me', $limit);
-        } catch (\Throwable $e) {
-            throw new BuildException(sprintf('fetch error: %s', $e->getMessage()));
-        }
-
-        if (!$response instanceof \stdClass) {
-            return;
-        }
-
-        if (!property_exists($response, 'data')) {
-            return;
-        }
-
-        $rawItems = $response->data;
-
-        if (!is_array($rawItems)) {
-            return;
-        }
-
-        if (count($rawItems) === 0) {
-            return;
-        }
-
-        $items = [];
-        foreach ($rawItems as $item) {
-            $items[] = get_object_vars($item);
-        }
-
-        $data->setFetchedEntities($items);
+        $this->dispatch('fetch', $engineConfiguration->getApiType(), [$data]);
     }
 
     /**
@@ -103,7 +62,10 @@ class SocialPostBuilder implements SocialPostBuilderInterface
      */
     public function configureFilter(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
-        // nothing to configure so far.
+        /** @var EngineConfiguration $engineConfiguration */
+        $engineConfiguration = $buildConfig->getEngineConfiguration();
+
+        $this->dispatch('configureFilter', $engineConfiguration->getApiType(), [$buildConfig, $resolver]);
     }
 
     /**
@@ -111,19 +73,10 @@ class SocialPostBuilder implements SocialPostBuilderInterface
      */
     public function filter(FilterData $data): void
     {
-        $options = $data->getOptions();
-        $buildConfig = $data->getBuildConfig();
+        /** @var EngineConfiguration $engineConfiguration */
+        $engineConfiguration = $data->getBuildConfig()->getEngineConfiguration();
 
-        $element = $data->getTransferredData();
-
-        if (!is_array($element)) {
-            return;
-        }
-
-        // @todo: check if feed has some filter (filter for hashtag for example)
-
-        $data->setFilteredElement($element);
-        $data->setFilteredId($element['id']);
+        $this->dispatch('filter', $engineConfiguration->getApiType(), [$data]);
     }
 
     /**
@@ -131,7 +84,10 @@ class SocialPostBuilder implements SocialPostBuilderInterface
      */
     public function configureTransform(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
-        // nothing to configure so far.
+        /** @var EngineConfiguration $engineConfiguration */
+        $engineConfiguration = $buildConfig->getEngineConfiguration();
+
+        $this->dispatch('configureTransform', $engineConfiguration->getApiType(), [$buildConfig, $resolver]);
     }
 
     /**
@@ -139,23 +95,36 @@ class SocialPostBuilder implements SocialPostBuilderInterface
      */
     public function transform(TransformData $data): void
     {
-        $options = $data->getOptions();
-        $buildConfig = $data->getBuildConfig();
+        /** @var EngineConfiguration $engineConfiguration */
+        $engineConfiguration = $data->getBuildConfig()->getEngineConfiguration();
 
-        $element = $data->getTransferredData();
-        $socialPost = $data->getSocialPostEntity();
+        $this->dispatch('transform', $engineConfiguration->getApiType(), [$data]);
+    }
 
-        if (!is_array($element)) {
-            return;
+    /**
+     * @param string $method
+     * @param string $apiType
+     * @param array  $arguments
+     *
+     * @throws BuildException
+     */
+    protected function dispatch(string $method, string $apiType, array $arguments)
+    {
+        if (isset($this->typedBuilders[$apiType])) {
+            $builder = $this->typedBuilders[$apiType];
+        } else {
+
+            $builder = $apiType === InstagramClient::API_PRIVATE
+                ? new PrivateBuilder($this->instagramClient)
+                : new BusinessBuilder($this->instagramClient);
+
+            $this->typedBuilders[$apiType] = $builder;
         }
 
-        $mediaType = $element['media_type'];
+        if (!method_exists($builder, $method)) {
+            throw new BuildException(sprintf('method "%s" for typed %s builder does not exist', $method, $apiType));
+        }
 
-        $socialPost->setContent($element['caption'] ?? null);
-        $socialPost->setSocialCreationDate(is_string($element['timestamp']) ? Carbon::create($element['timestamp']) : null);
-        $socialPost->setUrl($element['permalink']);
-        $socialPost->setPosterUrl($mediaType === 'IMAGE' ? $element['media_url'] : null);
-
-        $data->setTransformedElement($socialPost);
+        $builder->$method(...$arguments);
     }
 }

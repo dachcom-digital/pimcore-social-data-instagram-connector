@@ -22,6 +22,20 @@ SocialData.Feed.Instagram = Class.create(SocialData.Feed.AbstractFeed, {
 
         fields.push(
             {
+                xtype: 'container',
+                html: t('social_data.wall.feed.instagram.basic_display_api_only_note'),
+                anchor: '100%',
+                style: {
+                    padding: '5px',
+                    margin: '10px 0',
+                    background: '#c5d8c5'
+                },
+                flex: 1
+            }
+        );
+
+        fields.push(
+            {
                 xtype: 'numberfield',
                 value: this.data !== null ? this.data['limit'] : null,
                 fieldLabel: t('social_data.wall.feed.instagram.limit'),
