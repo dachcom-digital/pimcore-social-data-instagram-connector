@@ -38,3 +38,9 @@ services:
     SocialData\Connector\Instagram\Controller\Admin\InstagramController:
         calls:
             - [setContainer, ['@service_container']]
+
+    ## Maintenance
+
+    SocialData\Connector\Instagram\EventListener\Maintenance\RefreshTokenTask:
+        tags:
+            - { name: pimcore.maintenance.task, type: social_data_instagram_refresh_token_logs }

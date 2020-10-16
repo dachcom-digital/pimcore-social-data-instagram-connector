@@ -156,9 +156,35 @@ class InstagramClient
         return null;
     }
 
+    /**
+     * @param EngineConfiguration $connectorEngineConfiguration
+     *
+     * @return array
+     * @throws \Exception
+     */
     public function refreshAccessToken(EngineConfiguration $connectorEngineConfiguration)
     {
+        $client = $this->getClient($connectorEngineConfiguration);
 
+        if (!$client instanceof InstagramBasicDisplay) {
+            throw new \Exception('Refresh token only works with the instagram basic display API');
+        }
+
+        try {
+            $refreshedToken = $client->refreshToken($connectorEngineConfiguration->getAccessToken());
+        } catch (\Throwable $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+        $responseData = $this->parseBasicResponse($refreshedToken, ['access_token', 'expires_in']);
+
+        $expireDate = Carbon::now();
+        $expireDate->addSeconds($responseData['expires_in']);
+
+        return [
+            'token'     => $responseData['access_token'],
+            'expiresAt' => $expireDate->toDateTime()
+        ];
     }
 
     /**
