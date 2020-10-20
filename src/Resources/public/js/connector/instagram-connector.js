@@ -21,7 +21,6 @@ SocialData.Connector.Instagram = Class.create(SocialData.Connector.AbstractConne
     beforeDisableFieldState: function (stateType, toDisableState) {
 
         if (stateType === 'connection' && toDisableState === false) {
-            console.log(this.customConfiguration);
             return !(
                 this.customConfiguration.hasOwnProperty('appId') &&
                 this.customConfiguration.hasOwnProperty('appSecret') &&
