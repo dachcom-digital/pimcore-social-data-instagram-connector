@@ -1,5 +1,10 @@
 # Pimcore Social Data - Instagramm Connector
 
+[![Software License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat-square)](LICENSE.md)
+[![Latest Release](https://img.shields.io/packagist/v/dachcom-digital/social-data-instagram-connector.svg?style=flat-square)](https://packagist.org/packages/dachcom-digital/social-data-instagram-connector)
+[![Tests](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-social-data-instagram-connector/Codeception?style=flat-square&logo=github&label=codeception)](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/actions?query=workflow%3A%22Codeception%22)
+[![PhpStan](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-social-data-instagram-connector/PHP%20Stan?style=flat-square&logo=github&label=phpstan%20level%202)](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/actions?query=workflow%3A%22PHP%20Stan%22)
+
 This Connector allows you to fetch social posts from Instagram. 
 Before you start be sure you've checked out the [Setup Instructions](../00_Setup.md).
 
