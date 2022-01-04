@@ -9,30 +9,21 @@ class SocialDataInstagramConnectorBundle extends AbstractPimcoreBundle
 {
     use PackageVersionTrait;
 
-    const PACKAGE_NAME = 'dachcom-digital/social-data-instagram-connector';
+    public const PACKAGE_NAME = 'dachcom-digital/social-data-instagram-connector';
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getComposerPackageName(): string
     {
         return self::PACKAGE_NAME;
     }
 
-    /**
-     * @return array
-     */
-    public function getCssPaths()
+    public function getCssPaths(): array
     {
         return [
             '/bundles/socialdatainstagramconnector/css/admin.css'
         ];
     }
 
-    /**
-     * @return string[]
-     */
-    public function getJsPaths()
+    public function getJsPaths(): array
     {
         return [
             '/bundles/socialdatainstagramconnector/js/connector/instagram-connector.js',

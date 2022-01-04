@@ -16,31 +16,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PrivateBuilder
 {
-    /**
-     * @var InstagramClient
-     */
-    protected $instagramClient;
+    protected InstagramClient $instagramClient;
 
-    /**
-     * @param InstagramClient $instagramClient
-     */
     public function __construct(InstagramClient $instagramClient)
     {
         $this->instagramClient = $instagramClient;
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureFetch(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // nothing to configure so far.
     }
 
     /**
-     * @param FetchData $data
-     *
      * @throws BuildException
      */
     public function fetch(FetchData $data): void
@@ -100,18 +88,11 @@ class PrivateBuilder
         $data->setFetchedEntities($items);
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureFilter(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // nothing to configure so far.
     }
 
-    /**
-     * @param FilterData $data
-     */
     public function filter(FilterData $data): void
     {
         $options = $data->getOptions();
@@ -129,18 +110,11 @@ class PrivateBuilder
         $data->setFilteredId($element['id']);
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureTransform(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // nothing to configure so far.
     }
 
-    /**
-     * @param TransformData $data
-     */
     public function transform(TransformData $data): void
     {
         $options = $data->getOptions();

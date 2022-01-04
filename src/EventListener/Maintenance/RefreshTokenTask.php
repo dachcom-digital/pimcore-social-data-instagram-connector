@@ -12,34 +12,13 @@ use SocialDataBundle\Service\LockServiceInterface;
 
 class RefreshTokenTask implements TaskInterface
 {
-    const LOCK_ID = 'social_data_instagram_maintenance_task_refresh_token';
+    public const LOCK_ID = 'social_data_instagram_maintenance_task_refresh_token';
 
-    /**
-     * @var LockServiceInterface
-     */
-    protected $lockService;
+    protected LockServiceInterface $lockService;
+    protected InstagramClient $instagramClient;
+    protected EnvironmentServiceInterface $environmentService;
+    protected ConnectorServiceInterface $connectorService;
 
-    /**
-     * @var InstagramClient
-     */
-    protected $instagramClient;
-
-    /**
-     * @var EnvironmentServiceInterface
-     */
-    protected $environmentService;
-
-    /**
-     * @var ConnectorServiceInterface
-     */
-    protected $connectorService;
-
-    /**
-     * @param LockServiceInterface        $lockService
-     * @param InstagramClient             $instagramClient
-     * @param EnvironmentServiceInterface $environmentService
-     * @param ConnectorServiceInterface   $connectorService
-     */
     public function __construct(
         LockServiceInterface $lockService,
         InstagramClient $instagramClient,
@@ -52,13 +31,10 @@ class RefreshTokenTask implements TaskInterface
         $this->connectorService = $connectorService;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function execute()
+    public function execute(): void
     {
         // only run every 6 hours
-        $seconds = intval(6 * 3600);
+        $seconds = (int) (6 * 3600);
 
         if ($this->lockService->isLocked(self::LOCK_ID, $seconds)) {
             return;

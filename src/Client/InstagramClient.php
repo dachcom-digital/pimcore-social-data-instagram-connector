@@ -3,10 +3,6 @@
 namespace SocialData\Connector\Instagram\Client;
 
 use Carbon\Carbon;
-use Facebook\Facebook;
-use Facebook\Exceptions\FacebookSDKException;
-use EspressoDev\InstagramBasicDisplay\InstagramBasicDisplay;
-use EspressoDev\InstagramBasicDisplay\InstagramBasicDisplayException;
 use SocialData\Connector\Instagram\Session\InstagramDataHandler;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialDataBundle\Connector\ConnectorDefinitionInterface;
@@ -17,23 +13,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class InstagramClient
 {
-    const API_PRIVATE = 'private';
-    const API_BUSINESS = 'business';
+    public const API_PRIVATE = 'private';
+    public const API_BUSINESS = 'business';
 
-    /**
-     * @var SessionInterface
-     */
-    protected $session;
+    protected SessionInterface $session;
+    protected UrlGeneratorInterface $urlGenerator;
 
-    /**
-     * @var UrlGeneratorInterface
-     */
-    private $urlGenerator;
-
-    /**
-     * @param SessionInterface      $session
-     * @param UrlGeneratorInterface $urlGenerator
-     */
     public function __construct(SessionInterface $session, UrlGeneratorInterface $urlGenerator)
     {
         $this->session = $session;
@@ -41,14 +26,9 @@ class InstagramClient
     }
 
     /**
-     * @param EngineConfiguration          $connectorEngineConfiguration
-     * @param ConnectorDefinitionInterface $connectorDefinition
-     *
-     * @return string|null
-     *
      * @throws ConnectException
      */
-    public function generateRedirectUrl(EngineConfiguration $connectorEngineConfiguration, ConnectorDefinitionInterface $connectorDefinition)
+    public function generateRedirectUrl(EngineConfiguration $connectorEngineConfiguration, ConnectorDefinitionInterface $connectorDefinition): ?string
     {
         $redirectUrl = null;
         $client = $this->getClient($connectorEngineConfiguration);
@@ -69,14 +49,9 @@ class InstagramClient
     }
 
     /**
-     * @param EngineConfiguration $connectorEngineConfiguration
-     * @param Request             $request
-     *
-     * @return array|null
-     *
      * @throws ConnectException
      */
-    public function generateAccessTokenFromRequest(EngineConfiguration $connectorEngineConfiguration, Request $request)
+    public function generateAccessTokenFromRequest(EngineConfiguration $connectorEngineConfiguration, Request $request): ?array
     {
         $client = $this->getClient($connectorEngineConfiguration);
 
@@ -157,12 +132,9 @@ class InstagramClient
     }
 
     /**
-     * @param EngineConfiguration $connectorEngineConfiguration
-     *
-     * @return array
      * @throws \Exception
      */
-    public function refreshAccessToken(EngineConfiguration $connectorEngineConfiguration)
+    public function refreshAccessToken(EngineConfiguration $connectorEngineConfiguration): array
     {
         $client = $this->getClient($connectorEngineConfiguration);
 
@@ -194,7 +166,7 @@ class InstagramClient
      *
      * @throws ConnectException
      */
-    public function getClient(EngineConfiguration $connectorEngineConfiguration)
+    public function getClient(EngineConfiguration $connectorEngineConfiguration): array
     {
         try {
 
@@ -214,14 +186,10 @@ class InstagramClient
     }
 
     /**
-     * @param EngineConfiguration $configuration
-     *
-     * @return InstagramBasicDisplay
-     *
      * @throws InstagramBasicDisplayException
      * @throws \Exception
      */
-    protected function getPrivateClient(EngineConfiguration $configuration)
+    protected function getPrivateClient(EngineConfiguration $configuration): InstagramBasicDisplay
     {
         if ($configuration->getApiType() !== self::API_PRIVATE) {
             throw new \Exception('Engine does not allow usage of private client');
@@ -235,14 +203,10 @@ class InstagramClient
     }
 
     /**
-     * @param EngineConfiguration $configuration
-     *
-     * @return Facebook
-     *
      * @throws FacebookSDKException
      * @throws \Exception
      */
-    protected function getBusinessClient(EngineConfiguration $configuration)
+    protected function getBusinessClient(EngineConfiguration $configuration): Facebook
     {
         if ($configuration->getApiType() !== self::API_BUSINESS) {
             throw new \Exception('Engine does not allow usage of business client');
@@ -257,13 +221,9 @@ class InstagramClient
     }
 
     /**
-     * @param \stdClass|null $response
-     * @param array          $expectedValues
-     *
-     * @return array
      * @throws ConnectException
      */
-    protected function parseBasicResponse(?\stdClass $response, array $expectedValues)
+    protected function parseBasicResponse(?\stdClass $response, array $expectedValues): array
     {
         if (!$response instanceof \stdClass) {
             throw new ConnectException('basic response is empty', 500, 'parse_error', 'basic response error');
@@ -284,10 +244,7 @@ class InstagramClient
         return get_object_vars($response);
     }
 
-    /**
-     * @return string
-     */
-    protected function generateConnectUri()
+    protected function generateConnectUri(): string
     {
         return $this->urlGenerator->generate('social_data_connector_instagram_connect_check', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
