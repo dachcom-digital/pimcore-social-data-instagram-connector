@@ -45,7 +45,7 @@ class InstagramController extends AdminController
         }
 
         try {
-            $redirectUrl = $this->instagramClient->generateRedirectUrl($connectorEngineConfig, $connectorDefinition);
+            $redirectUrl = $this->instagramClient->generateConnectUrl($connectorEngineConfig, $connectorDefinition);
         } catch (\Throwable $e) {
             $error = $e->getMessage();
         }
@@ -66,6 +66,10 @@ class InstagramController extends AdminController
             $connectorEngineConfig = $this->getConnectorEngineConfig($this->getConnectorDefinition());
         } catch (\Throwable $e) {
             return $this->buildConnectErrorResponse(500, 'general_error', 'connector engine configuration error', $e->getMessage());
+        }
+
+        if (!$request->query->has('state') || $request->query->get('state') !== $request->getSession()->get('IGRLH_oauth2state_social_data')) {
+            return $this->buildConnectErrorResponse(400, 'general_error', 'missing state', 'Required param state missing from persistent data.');
         }
 
         try {

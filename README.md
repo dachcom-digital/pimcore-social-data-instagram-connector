@@ -43,12 +43,8 @@ class Kernel extends \Pimcore\Kernel
 
 ### III. Install Assets
 ```bash
-bin/console assets:install web --relative --symlink
+bin/console assets:install public --relative --symlink
 ```
-
-## Third-Party Requirements
-To use this connector, this bundle requires some additional packages:
-- [league/oauth2-instagram](https://github.com/thephpleague/oauth2-instagram): This package has already been installed if you're using this bundle and is required for the auth process
 
 ## Enable Connector
 ```yaml
@@ -59,7 +55,7 @@ social_data:
         -   connector_name: instagram
 ```
 
-## Set Cookie SameSite to Lax
+### Set Cookie SameSite to Lax
 Otherwise, the oauth connection won't work.
 > If you have any hints to allow processing an oauth connection within `strict` mode, 
 > please [tell us](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/issues).
@@ -69,6 +65,22 @@ framework:
     session:
         cookie_samesite: 'lax'
 ```
+
+## Instagram Backoffice
+Some hints to set up your instagram app
+
+### Private
+- Create Non-Business Facebook App
+- Add Instagram Basic Display Product
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/check` in `Valid OAuth Redirect URIs`
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/deauthorize` in `Deauthorize` (dummy)
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/data-deletion` in `Data Deletion Requests` (dummy)
+- Add at least one instagram test account
+
+### Business API
+Even if you're allowed to choose between a private and business connection, the business API is currently not supported and will be available soon.
+- Create Business Facebook App
+- Add Instagram Graph API
 
 ## Connector Configuration
 ![image](https://user-images.githubusercontent.com/700119/95104195-dac5f680-0735-11eb-9818-de5619b129b8.png)
@@ -92,10 +104,6 @@ Otherwise, you'll receive an error message. You may then need to repeat the conn
 |------|----------------------|
 | `Limit` | Define a limit to restrict the amount of social posts to import (Default: 50) |
 
-## Business API
-Even if you're allowed to choose between a private and business connection,
-the business API is currently not supported and will be available soon.
-
 ## Extended Connector Configuration
 Normally you don't need to modify connector (`connector_config`) configuration, so most of the time you can skip this step.
 However, if you need to change some core setting of a connector, you're able to change them of course.
@@ -106,8 +114,13 @@ social_data:
     available_connectors:
         -   connector_name: instagram
             connector_config:
+                api_connect_permission_private: ['user_profile', 'user_media'] # default value
                 api_connect_permission_business: ['pages_show_list', 'instagram_basic'] # default value
 ```
+
+## Third-Party Requirements
+To use this connector, this bundle requires some additional packages:
+- [league/oauth2-instagram](https://github.com/thephpleague/oauth2-instagram): This package has already been installed if you're using this bundle and is required for the auth process
 
 ***
 
