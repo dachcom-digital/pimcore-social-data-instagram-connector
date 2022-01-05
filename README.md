@@ -118,10 +118,6 @@ social_data:
                 api_connect_permission_business: ['pages_show_list', 'instagram_basic'] # default value
 ```
 
-## Third-Party Requirements
-To use this connector, this bundle requires some additional packages:
-- [league/oauth2-instagram](https://github.com/thephpleague/oauth2-instagram): This package has already been installed if you're using this bundle and is required for the auth process
-
 ***
 
 ## Copyright and license

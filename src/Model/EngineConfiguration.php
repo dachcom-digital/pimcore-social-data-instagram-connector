@@ -26,7 +26,7 @@ class EngineConfiguration implements ConnectorEngineConfigurationInterface
         return InstagramEngineType::class;
     }
 
-    public function setAccessToken(?string $token, bool $forceUpdate = false)
+    public function setAccessToken(?string $token, bool $forceUpdate = false): void
     {
         // symfony: if there are any fields on the form that are not included in the submitted data,
         // those fields will be explicitly set to null.
