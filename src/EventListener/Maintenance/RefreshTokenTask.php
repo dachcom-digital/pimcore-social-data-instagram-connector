@@ -37,11 +37,11 @@ class RefreshTokenTask implements TaskInterface
         // only run every 6 hours
         $seconds = (int) (6 * 3600);
 
-        if ($this->lockService->isLocked(self::LOCK_ID, $seconds)) {
+        if ($this->lockService->isLocked(self::LOCK_ID)) {
             return;
         }
 
-        $this->lockService->lock(self::LOCK_ID);
+        $this->lockService->lock(self::LOCK_ID, $seconds);
 
         $connectorDefinition = $this->connectorService->getConnectorDefinition('instagram', true);
         if (!$connectorDefinition->engineIsLoaded()) {
