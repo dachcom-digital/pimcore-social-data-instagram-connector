@@ -16,28 +16,15 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SocialPostBuilder implements SocialPostBuilderInterface
 {
-    /**
-     * @var InstagramClient
-     */
-    protected $instagramClient;
+    protected InstagramClient $instagramClient;
+    protected array $typedBuilders;
 
-    /**
-     * @var array
-     */
-    protected $typedBuilders;
-
-    /**
-     * @param InstagramClient $instagramClient
-     */
     public function __construct(InstagramClient $instagramClient)
     {
         $this->typedBuilders = [];
         $this->instagramClient = $instagramClient;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function configureFetch(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         /** @var EngineConfiguration $engineConfiguration */
@@ -46,9 +33,6 @@ class SocialPostBuilder implements SocialPostBuilderInterface
         $this->dispatch('configureFetch', $engineConfiguration->getApiType(), [$buildConfig, $resolver]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function fetch(FetchData $data): void
     {
         /** @var EngineConfiguration $engineConfiguration */
@@ -57,9 +41,6 @@ class SocialPostBuilder implements SocialPostBuilderInterface
         $this->dispatch('fetch', $engineConfiguration->getApiType(), [$data]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function configureFilter(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         /** @var EngineConfiguration $engineConfiguration */
@@ -68,9 +49,6 @@ class SocialPostBuilder implements SocialPostBuilderInterface
         $this->dispatch('configureFilter', $engineConfiguration->getApiType(), [$buildConfig, $resolver]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function filter(FilterData $data): void
     {
         /** @var EngineConfiguration $engineConfiguration */
@@ -79,9 +57,6 @@ class SocialPostBuilder implements SocialPostBuilderInterface
         $this->dispatch('filter', $engineConfiguration->getApiType(), [$data]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function configureTransform(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         /** @var EngineConfiguration $engineConfiguration */
@@ -90,9 +65,6 @@ class SocialPostBuilder implements SocialPostBuilderInterface
         $this->dispatch('configureTransform', $engineConfiguration->getApiType(), [$buildConfig, $resolver]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function transform(TransformData $data): void
     {
         /** @var EngineConfiguration $engineConfiguration */
@@ -102,13 +74,9 @@ class SocialPostBuilder implements SocialPostBuilderInterface
     }
 
     /**
-     * @param string $method
-     * @param string $apiType
-     * @param array  $arguments
-     *
      * @throws BuildException
      */
-    protected function dispatch(string $method, string $apiType, array $arguments)
+    protected function dispatch(string $method, string $apiType, array $arguments): void
     {
         if (isset($this->typedBuilders[$apiType])) {
             $builder = $this->typedBuilders[$apiType];

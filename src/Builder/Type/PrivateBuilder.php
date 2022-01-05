@@ -3,6 +3,7 @@
 namespace SocialData\Connector\Instagram\Builder\Type;
 
 use Carbon\Carbon;
+use SocialData\Connector\Instagram\QueryBuilder\InstagramQueryBuilder;
 use SocialDataBundle\Dto\BuildConfig;
 use SocialDataBundle\Dto\FetchData;
 use SocialDataBundle\Dto\FilterData;
@@ -16,102 +17,106 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PrivateBuilder
 {
-    /**
-     * @var InstagramClient
-     */
-    protected $instagramClient;
+    protected InstagramClient $instagramClient;
 
-    /**
-     * @param InstagramClient $instagramClient
-     */
     public function __construct(InstagramClient $instagramClient)
     {
         $this->instagramClient = $instagramClient;
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureFetch(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
-        // nothing to configure so far.
+        $engineConfiguration = $buildConfig->getEngineConfiguration();
+        $feedConfiguration = $buildConfig->getFeedConfiguration();
+
+        if (!$engineConfiguration instanceof EngineConfiguration) {
+            return;
+        }
+
+        if (!$feedConfiguration instanceof FeedConfiguration) {
+            return;
+        }
+
+
+        $limit = is_numeric($feedConfiguration->getLimit()) ? $feedConfiguration->getLimit() : 50;
+
+        $igQueryBuilder = new InstagramQueryBuilder('media');
+
+        $childrenEdgeFields = $igQueryBuilder
+            ->edge('children')
+            ->fields([
+                'id',
+                'media_type',
+                'media_url',
+                'permalink',
+                'thumbnail_url',
+                'timestamp',
+                'username'
+            ]);
+
+        $igQueryBuilder
+            ->limit($limit)
+            ->fields($childrenEdgeFields)
+            ->fields([
+            'id',
+            'caption',
+            'media_type',
+            'media_url',
+            'permalink',
+            'thumbnail_url',
+            'timestamp',
+            'username'
+        ]);
+
+        $resolver->setDefaults([
+            'instagramQueryBuilder' => $igQueryBuilder
+        ]);
+
+        $resolver->setRequired(['instagramQueryBuilder']);
+        $resolver->addAllowedTypes('instagramQueryBuilder', [InstagramQueryBuilder::class]);
     }
 
     /**
-     * @param FetchData $data
-     *
      * @throws BuildException
      */
     public function fetch(FetchData $data): void
     {
         $options = $data->getOptions();
         $buildConfig = $data->getBuildConfig();
-
         $engineConfiguration = $buildConfig->getEngineConfiguration();
-        $feedConfiguration = $buildConfig->getFeedConfiguration();
-
-        if (!$feedConfiguration instanceof FeedConfiguration) {
-            return;
-        }
 
         if (!$engineConfiguration instanceof EngineConfiguration) {
             return;
         }
 
+        /** @var InstagramQueryBuilder $fqbRequest */
+        $fqbRequest = $options['instagramQueryBuilder'];
+        $query = $fqbRequest->asEndpoint();
+
         try {
-            $client = $this->instagramClient->getClient($engineConfiguration);
-            $client->setAccessToken($engineConfiguration->getAccessToken());
+            $response = $this->instagramClient->makeGraphCall($query, $engineConfiguration);
         } catch (ConnectException $e) {
-            throw new BuildException(sprintf('instagram client error: %s', $e->getMessage()));
+            throw new BuildException(sprintf('graph error: %s [endpoint: %s]', $e->getMessage(), $query));
         }
 
-        $limit = is_numeric($feedConfiguration->getLimit()) ? $feedConfiguration->getLimit() : 50;
-
-        try {
-            $response = $client->getUserMedia('me', $limit);
-        } catch (\Throwable $e) {
-            throw new BuildException(sprintf('fetch error: %s', $e->getMessage()));
-        }
-
-        if (!$response instanceof \stdClass) {
+        if (!is_array($response['data'])) {
             return;
         }
 
-        if (!property_exists($response, 'data')) {
-            return;
-        }
-
-        $rawItems = $response->data;
-
-        if (!is_array($rawItems)) {
-            return;
-        }
+        $rawItems = $response['data'];
 
         if (count($rawItems) === 0) {
             return;
         }
 
-        $items = [];
-        foreach ($rawItems as $item) {
-            $items[] = get_object_vars($item);
-        }
-
-        $data->setFetchedEntities($items);
+        $data->setFetchedEntities($rawItems);
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureFilter(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // nothing to configure so far.
     }
 
-    /**
-     * @param FilterData $data
-     */
     public function filter(FilterData $data): void
     {
         $options = $data->getOptions();
@@ -129,18 +134,11 @@ class PrivateBuilder
         $data->setFilteredId($element['id']);
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureTransform(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // nothing to configure so far.
     }
 
-    /**
-     * @param TransformData $data
-     */
     public function transform(TransformData $data): void
     {
         $options = $data->getOptions();

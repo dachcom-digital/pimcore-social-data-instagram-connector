@@ -8,49 +8,27 @@ use SocialDataBundle\Connector\ConnectorEngineConfigurationInterface;
 class EngineConfiguration implements ConnectorEngineConfigurationInterface
 {
     /**
-     * @var string
-     *
      * @internal
      */
-    protected $accessToken;
+    protected ?string $accessToken = null;
 
     /**
-     * @var null|\DateTime
-     *
      * @internal
      */
-    protected $accessTokenExpiresAt;
+    protected ?\DateTime $accessTokenExpiresAt = null;
 
-    /**
-     * @var string
-     */
-    protected $appId;
+    protected ?string $appId;
+    protected ?string $appSecret;
+    protected ?string $apiType;
 
-    /**
-     * @var string
-     */
-    protected $appSecret;
-
-    /**
-     * @var string
-     */
-    protected $apiType;
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getFormClass()
+    public static function getFormClass(): string
     {
         return InstagramEngineType::class;
     }
 
-    /**
-     * @param string $token
-     * @param bool   $forceUpdate
-     */
-    public function setAccessToken($token, $forceUpdate = false)
+    public function setAccessToken(?string $token, bool $forceUpdate = false): void
     {
-        // symfony: if there are any fields on the form that aren’t included in the submitted data,
+        // symfony: if there are any fields on the form that are not included in the submitted data,
         // those fields will be explicitly set to null.
         if ($token === null && $forceUpdate === false) {
             return;
@@ -59,21 +37,14 @@ class EngineConfiguration implements ConnectorEngineConfigurationInterface
         $this->accessToken = $token;
     }
 
-    /**
-     * @return string
-     */
-    public function getAccessToken()
+    public function getAccessToken(): ?string
     {
         return $this->accessToken;
     }
 
-    /**
-     * @param null|\DateTime $expiresAt
-     * @param bool           $forceUpdate
-     */
-    public function setAccessTokenExpiresAt($expiresAt, $forceUpdate = false)
+    public function setAccessTokenExpiresAt(?\DateTime $expiresAt, bool $forceUpdate = false): void
     {
-        // symfony: if there are any fields on the form that aren’t included in the submitted data,
+        // symfony: if there are any fields on the form that are not included in the submitted data,
         // those fields will be explicitly set to null.
         if ($expiresAt === null && $forceUpdate === false) {
             return;
@@ -82,58 +53,37 @@ class EngineConfiguration implements ConnectorEngineConfigurationInterface
         $this->accessTokenExpiresAt = $expiresAt;
     }
 
-    /**
-     * @return null|\DateTime
-     */
-    public function getAccessTokenExpiresAt()
+    public function getAccessTokenExpiresAt(): ?\DateTime
     {
         return $this->accessTokenExpiresAt;
     }
 
-    /**
-     * @param string $appId
-     */
-    public function setAppId($appId)
+    public function setAppId(string $appId): void
     {
         $this->appId = $appId;
     }
 
-    /**
-     * @return string
-     */
-    public function getAppId()
+    public function getAppId(): ?string
     {
         return $this->appId;
     }
 
-    /**
-     * @param string $appSecret
-     */
-    public function setAppSecret($appSecret)
+    public function setAppSecret(string $appSecret): void
     {
         $this->appSecret = $appSecret;
     }
 
-    /**
-     * @return string
-     */
-    public function getAppSecret()
+    public function getAppSecret(): ?string
     {
         return $this->appSecret;
     }
 
-    /**
-     * @param string $apiType
-     */
-    public function setApiType($apiType)
+    public function setApiType(string $apiType): void
     {
         $this->apiType = $apiType;
     }
 
-    /**
-     * @return string
-     */
-    public function getApiType()
+    public function getApiType(): ?string
     {
         return $this->apiType;
     }

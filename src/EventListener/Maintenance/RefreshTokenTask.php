@@ -3,6 +3,7 @@
 namespace SocialData\Connector\Instagram\EventListener\Maintenance;
 
 use Carbon\Carbon;
+use League\OAuth2\Client\Token\AccessToken;
 use SocialData\Connector\Instagram\Client\InstagramClient;
 use Pimcore\Maintenance\TaskInterface;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
@@ -12,34 +13,13 @@ use SocialDataBundle\Service\LockServiceInterface;
 
 class RefreshTokenTask implements TaskInterface
 {
-    const LOCK_ID = 'social_data_instagram_maintenance_task_refresh_token';
+    public const LOCK_ID = 'instagram_maintenance_task_refresh_token';
 
-    /**
-     * @var LockServiceInterface
-     */
-    protected $lockService;
+    protected LockServiceInterface $lockService;
+    protected InstagramClient $instagramClient;
+    protected EnvironmentServiceInterface $environmentService;
+    protected ConnectorServiceInterface $connectorService;
 
-    /**
-     * @var InstagramClient
-     */
-    protected $instagramClient;
-
-    /**
-     * @var EnvironmentServiceInterface
-     */
-    protected $environmentService;
-
-    /**
-     * @var ConnectorServiceInterface
-     */
-    protected $connectorService;
-
-    /**
-     * @param LockServiceInterface        $lockService
-     * @param InstagramClient             $instagramClient
-     * @param EnvironmentServiceInterface $environmentService
-     * @param ConnectorServiceInterface   $connectorService
-     */
     public function __construct(
         LockServiceInterface $lockService,
         InstagramClient $instagramClient,
@@ -52,19 +32,16 @@ class RefreshTokenTask implements TaskInterface
         $this->connectorService = $connectorService;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function execute()
+    public function execute(): void
     {
         // only run every 6 hours
-        $seconds = intval(6 * 3600);
+        $seconds = (int) (6 * 3600);
 
-        if ($this->lockService->isLocked(self::LOCK_ID, $seconds)) {
+        if ($this->lockService->isLocked(self::LOCK_ID)) {
             return;
         }
 
-        $this->lockService->lock(self::LOCK_ID);
+        $this->lockService->lock(self::LOCK_ID, $seconds);
 
         $connectorDefinition = $this->connectorService->getConnectorDefinition('instagram', true);
         if (!$connectorDefinition->engineIsLoaded()) {
@@ -81,7 +58,7 @@ class RefreshTokenTask implements TaskInterface
 
         $expiredDate = $connectorEngineConfig->getAccessTokenExpiresAt();
 
-        if (empty($connectorEngineConfig->getAccessToken()) || !$expiredDate instanceof \DateTime) {
+        if (!$expiredDate instanceof \DateTime || empty($connectorEngineConfig->getAccessToken())) {
             return;
         }
 
@@ -93,23 +70,25 @@ class RefreshTokenTask implements TaskInterface
             return;
         }
 
-        // token expires at least in 5 days, we dont need to refresh it now.
+        // token expires at least in 5 days, we don't need to refresh it now.
         if ($dayDiff > 5) {
             return;
         }
 
         try {
-            $responseData = $this->instagramClient->refreshAccessToken($connectorEngineConfig);
+            $refreshedToken = $this->instagramClient->refreshAccessToken($connectorEngineConfig, $connectorEngineConfig->getAccessToken());
         } catch (\Exception $e) {
             return;
         }
 
-        if (!is_array($responseData)) {
+        if (!$refreshedToken instanceof AccessToken) {
             return;
         }
 
-        $connectorEngineConfig->setAccessToken($responseData['token'], true);
-        $connectorEngineConfig->setAccessTokenExpiresAt($responseData['expiresAt'], true);
+        $expiresAt = $refreshedToken->getExpires() !== null ? \DateTime::createFromFormat('U', $refreshedToken->getExpires()) : null;
+
+        $connectorEngineConfig->setAccessToken($refreshedToken->getToken(), true);
+        $connectorEngineConfig->setAccessTokenExpiresAt($expiresAt, true);
 
         $this->connectorService->updateConnectorEngineConfiguration('instagram', $connectorEngineConfig);
     }

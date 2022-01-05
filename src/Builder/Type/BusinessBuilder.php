@@ -11,65 +11,38 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class BusinessBuilder
 {
-    /**
-     * @var InstagramClient
-     */
-    protected $instagramClient;
+    protected InstagramClient $instagramClient;
 
-    /**
-     * @param InstagramClient $instagramClient
-     */
     public function __construct(InstagramClient $instagramClient)
     {
         $this->instagramClient = $instagramClient;
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureFetch(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // @todo
     }
 
-    /**
-     * @param FetchData $data
-     */
     public function fetch(FetchData $data): void
     {
         // @todo
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureFilter(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // @todo
     }
 
-    /**
-     * @param FilterData $data
-     */
     public function filter(FilterData $data): void
     {
         // @todo
     }
 
-    /**
-     * @param BuildConfig     $buildConfig
-     * @param OptionsResolver $resolver
-     */
     public function configureTransform(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         // @todo
     }
 
-    /**
-     * @param TransformData $data
-     */
     public function transform(TransformData $data): void
     {
         // @todo

@@ -1,34 +1,38 @@
-# Pimcore Social Data - Instagramm Connector
+# Pimcore Social Data - Instagram Connector
 
 [![Software License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Latest Release](https://img.shields.io/packagist/v/dachcom-digital/social-data-instagram-connector.svg?style=flat-square)](https://packagist.org/packages/dachcom-digital/social-data-instagram-connector)
-[![Tests](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-social-data-instagram-connector/Codeception?style=flat-square&logo=github&label=codeception)](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/actions?query=workflow%3A%22Codeception%22)
-[![PhpStan](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-social-data-instagram-connector/PHP%20Stan?style=flat-square&logo=github&label=phpstan%20level%202)](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/actions?query=workflow%3A%22PHP%20Stan%22)
+[![Tests](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-social-data-instagram-connector/Codeception/master?style=flat-square&logo=github&label=codeception)](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/actions?query=workflow%3ACodeception+branch%3Amaster)
+[![PhpStan](https://img.shields.io/github/workflow/status/dachcom-digital/pimcore-social-data-instagram-connector/PHP%20Stan/master?style=flat-square&logo=github&label=phpstan%20level%204)](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/actions?query=workflow%3A"PHP+Stan"+branch%3Amaster)
 
-This Connector allows you to fetch social posts from Instagram. 
-Before you start be sure you've checked out the [Setup Instructions](../00_Setup.md).
+This Connector allows you to fetch social posts from Instagram (Currently only via basic display api). 
 
 ![image](https://user-images.githubusercontent.com/700119/95104131-c7b32680-0735-11eb-8bf2-696ca98c220d.png)
 
-#### Requirements
-* [Pimcore Social Data Bundle](https://github.com/dachcom-digital/pimcore-social-data)
+### Release Plan
+| Release | Supported Pimcore Versions        | Supported Symfony Versions | Release Date | Maintained     | Branch     |
+|---------|-----------------------------------|----------------------------|--------------|----------------|------------|
+| **2.x** | `10.1` - `10.2`                   | `5.4`                      | --           | Feature Branch | master     |
+| **1.x** | `6.0` - `6.9`                     | `3.4`, `^4.4`              | 22.10.2020   | Unsupported    | 1.x        |
 
 ## Installation
 
 ### I. Add Dependency
 ```json
 "require" : {
-    "dachcom-digital/social-data-instagram-connector" : "~1.0.0",
+    "dachcom-digital/social-data" : "~2.0.0",
+    "dachcom-digital/social-data-instagram-connector" : "~2.0.0",
 }
 ```
 
 ### II. Register Connector Bundle
 ```php
-// src/AppKernel.php
-use Pimcore\Kernel;
+// src/Kernel.php
+namespace App;
+
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
-class AppKernel extends Kernel
+class Kernel extends \Pimcore\Kernel
 {
     public function registerBundlesToCollection(BundleCollection $collection)
     {
@@ -39,16 +43,10 @@ class AppKernel extends Kernel
 
 ### III. Install Assets
 ```bash
-bin/console assets:install web --relative --symlink
+bin/console assets:install public --relative --symlink
 ```
 
-## Third-Party Requirements
-To use this connector, this bundle requires some additional packages:
-- [facebook/graph-sdk](https://github.com/facebookarchive/php-graph-sdk): Required for business API (Mostly already installed within a Pimcore Installation)
-- [instagram-basic-display-php](https://github.com/espresso-dev/instagram-basic-display-php): Required for private API
-
 ## Enable Connector
-
 ```yaml
 # app/config/config.yml
 social_data:
@@ -56,6 +54,33 @@ social_data:
     available_connectors:
         -   connector_name: instagram
 ```
+
+### Set Cookie SameSite to Lax
+Otherwise, the oauth connection won't work.
+> If you have any hints to allow processing an oauth connection within `strict` mode, 
+> please [tell us](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/issues).
+
+```yaml
+framework:
+    session:
+        cookie_samesite: 'lax'
+```
+
+## Instagram Backoffice
+Some hints to set up your instagram app
+
+### Private
+- Create Non-Business Facebook App
+- Add Instagram Basic Display Product
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/check` in `Valid OAuth Redirect URIs`
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/deauthorize` in `Deauthorize` (dummy)
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/data-deletion` in `Data Deletion Requests` (dummy)
+- Add at least one instagram test account
+
+### Business API
+Even if you're allowed to choose between a private and business connection, the business API is currently not supported and will be available soon.
+- Create Business Facebook App
+- Add Instagram Graph API
 
 ## Connector Configuration
 ![image](https://user-images.githubusercontent.com/700119/95104195-dac5f680-0735-11eb-9818-de5619b129b8.png)
@@ -75,7 +100,6 @@ If everything worked out fine, the connection setup is complete after the popup 
 Otherwise, you'll receive an error message. You may then need to repeat the connection step.
 
 ## Feed Configuration
-
 | Name | Description
 |------|----------------------|
 | `Limit` | Define a limit to restrict the amount of social posts to import (Default: 50) |
@@ -90,6 +114,7 @@ social_data:
     available_connectors:
         -   connector_name: instagram
             connector_config:
+                api_connect_permission_private: ['user_profile', 'user_media'] # default value
                 api_connect_permission_business: ['pages_show_list', 'instagram_basic'] # default value
 ```
 

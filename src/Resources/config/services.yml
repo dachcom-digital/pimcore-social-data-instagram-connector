@@ -36,8 +36,7 @@ services:
     ## Controller
 
     SocialData\Connector\Instagram\Controller\Admin\InstagramController:
-        calls:
-            - [setContainer, ['@service_container']]
+        tags: [ 'controller.service_arguments' ]
 
     ## Maintenance
 

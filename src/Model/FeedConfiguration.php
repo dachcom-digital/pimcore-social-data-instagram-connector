@@ -7,31 +7,19 @@ use SocialDataBundle\Connector\ConnectorFeedConfigurationInterface;
 
 class FeedConfiguration implements ConnectorFeedConfigurationInterface
 {
-    /**
-     * @var int
-     */
-    protected $limit;
+    protected ?int $limit = null;
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getFormClass()
+    public static function getFormClass(): string
     {
         return InstagramFeedType::class;
     }
 
-    /**
-     * @param int|null $limit
-     */
-    public function setLimit(?int $limit)
+    public function setLimit(?int $limit): void
     {
         $this->limit = $limit;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getLimit()
+    public function getLimit(): ?int
     {
         return $this->limit;
     }

@@ -12,63 +12,39 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ConnectorDefinition implements ConnectorDefinitionInterface
 {
-    /**
-     * @var ConnectorEngineInterface|null
-     */
-    protected $connectorEngine;
+    protected ?ConnectorEngineInterface $connectorEngine = null;
+    protected SocialPostBuilderInterface $socialPostBuilder;
+    protected array $definitionConfiguration;
 
-    /**
-     * @var SocialPostBuilderInterface
-     */
-    protected $socialPostBuilder;
-
-    /**
-     * @var array
-     */
-    protected $definitionConfiguration;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setConnectorEngine(?ConnectorEngineInterface $connectorEngine)
+    public function setConnectorEngine(?ConnectorEngineInterface $connectorEngine): void
     {
         $this->connectorEngine = $connectorEngine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConnectorEngine()
+    public function getConnectorEngine(): ?ConnectorEngineInterface
     {
         return $this->connectorEngine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setSocialPostBuilder(SocialPostBuilderInterface $builder)
+    public function setSocialPostBuilder(SocialPostBuilderInterface $builder): void
     {
         $this->socialPostBuilder = $builder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getSocialPostBuilder()
+    public function getSocialPostBuilder(): SocialPostBuilderInterface
     {
         return $this->socialPostBuilder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setDefinitionConfiguration(array $definitionConfiguration)
+    public function setDefinitionConfiguration(array $definitionConfiguration): void
     {
         $resolver = new OptionsResolver();
         $resolver->setDefaults([
-            'api_connect_permission_business' => ['pages_show_list', 'instagram_basic']
+            'api_connect_permission_private' => ['user_profile', 'user_media'],
+            'api_connect_permission_business' => ['pages_show_list', 'instagram_basic'],
         ]);
 
+        $resolver->setAllowedTypes('api_connect_permission_private', 'string[]');
         $resolver->setAllowedTypes('api_connect_permission_business', 'string[]');
 
         try {
@@ -78,26 +54,17 @@ class ConnectorDefinition implements ConnectorDefinitionInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefinitionConfiguration()
+    public function getDefinitionConfiguration(): array
     {
         return $this->definitionConfiguration;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function engineIsLoaded()
+    public function engineIsLoaded(): bool
     {
         return $this->getConnectorEngine() instanceof ConnectorEngineInterface;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isOnline()
+    public function isOnline(): bool
     {
         if (!$this->engineIsLoaded()) {
             return false;
@@ -119,34 +86,22 @@ class ConnectorDefinition implements ConnectorDefinitionInterface
         return $this->isConnected();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function beforeEnable()
+    public function beforeEnable(): void
     {
         // not required. just enable it.
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function beforeDisable()
+    public function beforeDisable(): void
     {
         // not required. just disable it.
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isAutoConnected()
+    public function isAutoConnected(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isConnected()
+    public function isConnected(): bool
     {
         if ($this->engineIsLoaded() === false) {
             return false;
@@ -160,52 +115,34 @@ class ConnectorDefinition implements ConnectorDefinitionInterface
         return $configuration->getAccessToken() !== null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function connect()
+    public function connect(): void
     {
         if ($this->isConnected() === false) {
             throw new \Exception('No valid Access Token found. If you already tried to connect your application check your credentials again.');
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function disconnect()
+    public function disconnect(): void
     {
         // @todo
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function needsEngineConfiguration()
+    public function needsEngineConfiguration(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getEngineConfigurationClass()
+    public function getEngineConfigurationClass(): string
     {
         return EngineConfiguration::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getFeedConfigurationClass()
+    public function getFeedConfigurationClass(): string
     {
         return FeedConfiguration::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getEngineConfiguration()
+    public function getEngineConfiguration(): ?ConnectorEngineConfigurationInterface
     {
         if (!$this->engineIsLoaded()) {
             return null;
