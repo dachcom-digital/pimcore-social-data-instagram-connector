@@ -152,11 +152,12 @@ class PrivateBuilder
         }
 
         $mediaType = $element['media_type'];
+        $posterUrl = in_array($mediaType, ['IMAGE', 'CAROUSEL_ALBUM']) ? $element['media_url'] : ($mediaType === 'VIDEO' ? $element['thumbnail_url'] : null);
 
         $socialPost->setContent($element['caption'] ?? null);
         $socialPost->setSocialCreationDate(is_string($element['timestamp']) ? Carbon::create($element['timestamp']) : null);
         $socialPost->setUrl($element['permalink']);
-        $socialPost->setPosterUrl($mediaType === 'IMAGE' ? $element['media_url'] : null);
+        $socialPost->setPosterUrl($posterUrl);
 
         $data->setTransformedElement($socialPost);
     }
