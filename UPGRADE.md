@@ -1,5 +1,8 @@
 # Upgrade Notes
 
+## 2.0.1
+- [IMPROVEMENT] Implement missing image imports for media_type CAROUSEL_ALBUM and VIDEO [#7](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/pull/7)
+
 ## Migrating from Version 1.x to Version 2.0.0
 
 ### Global Changes
