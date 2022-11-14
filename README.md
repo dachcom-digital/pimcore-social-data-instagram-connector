@@ -10,10 +10,10 @@ This Connector allows you to fetch social posts from Instagram (Currently only v
 ![image](https://user-images.githubusercontent.com/700119/95104131-c7b32680-0735-11eb-8bf2-696ca98c220d.png)
 
 ### Release Plan
-| Release | Supported Pimcore Versions        | Supported Symfony Versions | Release Date | Maintained     | Branch     |
-|---------|-----------------------------------|----------------------------|--------------|----------------|------------|
-| **2.x** | `10.1` - `10.2`                   | `5.4`                      | 05.01.2022   | Feature Branch | master     |
-| **1.x** | `6.0` - `6.9`                     | `3.4`, `^4.4`              | 22.10.2020   | Unsupported    | [1.x](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/tree/1.x) |
+| Release | Supported Pimcore Versions | Supported Symfony Versions | Release Date | Maintained     | Branch                                                                                     |
+|---------|----------------------------|----------------------------|--------------|----------------|--------------------------------------------------------------------------------------------|
+| **2.x** | `10.1` - `10.5`            | `5.4`                      | 05.01.2022   | Feature Branch | master                                                                                     |
+| **1.x** | `6.0` - `6.9`              | `3.4`, `^4.4`              | 22.10.2020   | Unsupported    | [1.x](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/tree/1.x) |
 
 ## Installation
 
