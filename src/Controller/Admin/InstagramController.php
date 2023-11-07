@@ -2,7 +2,7 @@
 
 namespace SocialData\Connector\Instagram\Controller\Admin;
 
-use Pimcore\Bundle\AdminBundle\Controller\AdminController;
+use Pimcore\Bundle\AdminBundle\Controller\AdminAbstractController;
 use SocialData\Connector\Instagram\Client\InstagramClient;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialDataBundle\Connector\ConnectorDefinitionInterface;
@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class InstagramController extends AdminController
+class InstagramController extends AdminAbstractController
 {
     use ConnectResponseTrait;
 

@@ -10,7 +10,8 @@ use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialDataBundle\Connector\ConnectorDefinitionInterface;
 use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class InstagramClient
@@ -20,13 +21,10 @@ class InstagramClient
     public const API_PRIVATE = 'private';
     public const API_BUSINESS = 'business';
 
-    protected SessionInterface $session;
-    protected UrlGeneratorInterface $urlGenerator;
-
-    public function __construct(SessionInterface $session, UrlGeneratorInterface $urlGenerator)
-    {
-        $this->session = $session;
-        $this->urlGenerator = $urlGenerator;
+    public function __construct(
+        protected RequestStack $requestStack,
+        protected UrlGeneratorInterface $urlGenerator
+    ) {
     }
 
     /**
@@ -48,7 +46,7 @@ class InstagramClient
             throw new ConnectException($e->getMessage(), 500, 'general_error', 'redirect url generation error');
         }
 
-        $this->session->set('IGRLH_oauth2state_social_data', $provider->getState());
+        $this->getSession()->set('IGRLH_oauth2state_social_data', $provider->getState());
 
         return $authUrl;
     }
@@ -183,6 +181,17 @@ class InstagramClient
     protected function generateConnectUri(): string
     {
         return $this->urlGenerator->generate('social_data_connector_instagram_connect_check', [], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+
+    protected function getSession(): Session
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if ($request === null) {
+            throw new \LogicException('Cannot get the session without an active request.');
+        }
+
+        return $request->getSession();
     }
 }
 
