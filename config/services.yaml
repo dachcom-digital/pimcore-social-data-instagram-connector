@@ -38,6 +38,12 @@ services:
     SocialData\Connector\Instagram\Controller\Admin\InstagramController:
         tags: [ 'controller.service_arguments' ]
 
+    ## Events
+
+    SocialData\Connector\Instagram\EventListener\Admin\AssetListener:
+        tags:
+            - { name: kernel.event_subscriber }
+
     ## Maintenance
 
     SocialData\Connector\Instagram\EventListener\Maintenance\RefreshTokenTask:
