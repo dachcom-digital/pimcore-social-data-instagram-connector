@@ -2,7 +2,7 @@ bundles:
     - { namespace: \Pimcore\Bundle\AdminBundle\PimcoreAdminBundle, priority: 60 }
     - { namespace: \Pimcore\Bundle\SeoBundle\PimcoreSeoBundle, priority: 0, execute_installer: true }
     - { namespace: \SocialDataBundle\SocialDataBundle }
-    - { namespace: \SocialData\Connector\Facebook\SocialDataFacebookConnectorBundle }
+    - { namespace: \SocialData\Connector\Instagram\SocialDataInstagramConnectorBundle }
 setup_files:
     - { path: app/config.yaml, dest: ./config/ }
     - { path: app/system_settings.yaml, dest: ./var/config/system_settings/ }
