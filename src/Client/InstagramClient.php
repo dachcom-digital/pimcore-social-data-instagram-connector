@@ -11,7 +11,7 @@ use SocialDataBundle\Connector\ConnectorDefinitionInterface;
 use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class InstagramClient
@@ -183,7 +183,7 @@ class InstagramClient
         return $this->urlGenerator->generate('social_data_connector_instagram_connect_check', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
-    protected function getSession(): Session
+    protected function getSession(): SessionInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
