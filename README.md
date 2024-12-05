@@ -20,8 +20,8 @@ This Connector allows you to fetch social posts from Instagram (Currently only v
 
 ```json
 "require" : {
-    "dachcom-digital/social-data" : "~3.0.0",
-    "dachcom-digital/social-data-instagram-connector" : "~3.0.0"
+    "dachcom-digital/social-data" : "~3.1.0",
+    "dachcom-digital/social-data-instagram-connector" : "~3.1.0"
 }
 ```
 
