@@ -1,17 +1,28 @@
 <?php
 
+/*
+ * This source file is available under two different licenses:
+ *   - GNU General Public License version 3 (GPLv3)
+ *   - DACHCOM Commercial License (DCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ * @copyright  Copyright (c) DACHCOM.DIGITAL AG (https://www.dachcom-digital.com)
+ * @license    GPLv3 and DCL
+ */
+
 namespace SocialData\Connector\Instagram\Builder\Type;
 
 use Carbon\Carbon;
+use SocialData\Connector\Instagram\Client\InstagramClient;
+use SocialData\Connector\Instagram\Model\EngineConfiguration;
+use SocialData\Connector\Instagram\Model\FeedConfiguration;
 use SocialData\Connector\Instagram\QueryBuilder\InstagramQueryBuilder;
 use SocialDataBundle\Dto\BuildConfig;
 use SocialDataBundle\Dto\FetchData;
 use SocialDataBundle\Dto\FilterData;
 use SocialDataBundle\Dto\TransformData;
 use SocialDataBundle\Exception\BuildException;
-use SocialData\Connector\Instagram\Model\EngineConfiguration;
-use SocialData\Connector\Instagram\Model\FeedConfiguration;
-use SocialData\Connector\Instagram\Client\InstagramClient;
 use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -37,7 +48,6 @@ class PrivateBuilder
             return;
         }
 
-
         $limit = is_numeric($feedConfiguration->getLimit()) ? $feedConfiguration->getLimit() : 50;
 
         $igQueryBuilder = new InstagramQueryBuilder('media');
@@ -58,15 +68,15 @@ class PrivateBuilder
             ->limit($limit)
             ->fields($childrenEdgeFields)
             ->fields([
-            'id',
-            'caption',
-            'media_type',
-            'media_url',
-            'permalink',
-            'thumbnail_url',
-            'timestamp',
-            'username'
-        ]);
+                'id',
+                'caption',
+                'media_type',
+                'media_url',
+                'permalink',
+                'thumbnail_url',
+                'timestamp',
+                'username'
+            ]);
 
         $resolver->setDefaults([
             'instagramQueryBuilder' => $igQueryBuilder

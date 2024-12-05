@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * This source file is available under two different licenses:
+ *   - GNU General Public License version 3 (GPLv3)
+ *   - DACHCOM Commercial License (DCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ * @copyright  Copyright (c) DACHCOM.DIGITAL AG (https://www.dachcom-digital.com)
+ * @license    GPLv3 and DCL
+ */
+
 namespace SocialData\Connector\Instagram\QueryBuilder;
 
 class GraphEdge extends GraphNode
@@ -22,8 +33,7 @@ class GraphEdge extends GraphNode
         $hasChildren = false;
 
         foreach ($this->fields as $v) {
-
-            if ($v instanceof GraphEdge) {
+            if ($v instanceof self) {
                 $hasChildren = true;
 
                 $children = $v->getChildEdges();
@@ -64,7 +74,7 @@ class GraphEdge extends GraphNode
         $processed_fields = [];
 
         foreach ($this->fields as $v) {
-            $processed_fields[] = $v instanceof GraphEdge ? $v->asUrl() : urlencode($v);
+            $processed_fields[] = $v instanceof self ? $v->asUrl() : urlencode($v);
         }
 
         $this->compiledValues[] = sprintf('{%s}', implode(',', $processed_fields));

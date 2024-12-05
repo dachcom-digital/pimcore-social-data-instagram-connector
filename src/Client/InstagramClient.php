@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * This source file is available under two different licenses:
+ *   - GNU General Public License version 3 (GPLv3)
+ *   - DACHCOM Commercial License (DCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ * @copyright  Copyright (c) DACHCOM.DIGITAL AG (https://www.dachcom-digital.com)
+ * @license    GPLv3 and DCL
+ */
+
 namespace SocialData\Connector\Instagram\Client;
 
 use GuzzleHttp\Client;
@@ -17,7 +28,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class InstagramClient
 {
     protected const GRAPH_VERSION = 'v12.0';
-
     public const API_PRIVATE = 'private';
     public const API_BUSINESS = 'business';
 
@@ -130,6 +140,7 @@ class InstagramClient
 
     /**
      * @internal
+     *
      * @deprecated replace with core if https://github.com/thephpleague/oauth2-instagram/pull/18 gets merged
      */
     protected function updateAccessToken(Instagram $provider, string $token, array $params, string $grant): AccessToken
@@ -190,4 +201,3 @@ class InstagramClient
         return $request->getSession();
     }
 }
-
