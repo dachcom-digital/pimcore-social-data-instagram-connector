@@ -79,10 +79,6 @@ class InstagramClient
             throw new ConnectException($e->getMessage(), 500, 'general_error', 'exchange token error');
         }
 
-        if (!$accessToken instanceof AccessToken) {
-            throw new ConnectException('Could not generate long lived token', 500, 'general_error', 'exchange token error');
-        }
-
         return [
             'token'     => $accessToken->getToken(),
             'expiresAt' => $accessToken->getExpires() !== null ? \DateTime::createFromFormat('U', $accessToken->getExpires()) : null
