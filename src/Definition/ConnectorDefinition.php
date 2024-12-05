@@ -1,11 +1,22 @@
 <?php
 
+/*
+ * This source file is available under two different licenses:
+ *   - GNU General Public License version 3 (GPLv3)
+ *   - DACHCOM Commercial License (DCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ * @copyright  Copyright (c) DACHCOM.DIGITAL AG (https://www.dachcom-digital.com)
+ * @license    GPLv3 and DCL
+ */
+
 namespace SocialData\Connector\Instagram\Definition;
 
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialData\Connector\Instagram\Model\FeedConfiguration;
-use SocialDataBundle\Connector\ConnectorEngineConfigurationInterface;
 use SocialDataBundle\Connector\ConnectorDefinitionInterface;
+use SocialDataBundle\Connector\ConnectorEngineConfigurationInterface;
 use SocialDataBundle\Connector\SocialPostBuilderInterface;
 use SocialDataBundle\Model\ConnectorEngineInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -40,7 +51,7 @@ class ConnectorDefinition implements ConnectorDefinitionInterface
     {
         $resolver = new OptionsResolver();
         $resolver->setDefaults([
-            'api_connect_permission_private' => ['user_profile', 'user_media'],
+            'api_connect_permission_private'  => ['user_profile', 'user_media'],
             'api_connect_permission_business' => ['pages_show_list', 'instagram_basic'],
         ]);
 

@@ -1,10 +1,21 @@
 <?php
 
+/*
+ * This source file is available under two different licenses:
+ *   - GNU General Public License version 3 (GPLv3)
+ *   - DACHCOM Commercial License (DCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ * @copyright  Copyright (c) DACHCOM.DIGITAL AG (https://www.dachcom-digital.com)
+ * @license    GPLv3 and DCL
+ */
+
 namespace SocialData\Connector\Instagram\QueryBuilder;
 
 final class InstagramQueryBuilder
 {
-    protected GraphNode $graphNode;
+    private GraphNode $graphNode;
 
     public function __construct(?string $graphEndpoint = '')
     {
@@ -13,9 +24,9 @@ final class InstagramQueryBuilder
         }
     }
 
-    public function node(string $graphNodeName): InstagramQueryBuilder
+    public function node(string $graphNodeName): self
     {
-        return new InstagramQueryBuilder($graphNodeName);
+        return new self($graphNodeName);
     }
 
     public function edge(string $edgeName, array $fields = []): GraphEdge
@@ -23,7 +34,7 @@ final class InstagramQueryBuilder
         return new GraphEdge($edgeName, $fields);
     }
 
-    public function fields(mixed $fields): InstagramQueryBuilder
+    public function fields(mixed $fields): self
     {
         if (!is_array($fields)) {
             $fields = func_get_args();
@@ -34,14 +45,14 @@ final class InstagramQueryBuilder
         return $this;
     }
 
-    public function limit(int $limit): InstagramQueryBuilder
+    public function limit(int $limit): self
     {
         $this->graphNode->limit($limit);
 
         return $this;
     }
 
-    public function modifiers(array $data): InstagramQueryBuilder
+    public function modifiers(array $data): self
     {
         $this->graphNode->modifiers($data);
 

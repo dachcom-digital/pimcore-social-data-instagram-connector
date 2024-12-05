@@ -1,11 +1,21 @@
 <?php
 
+/*
+ * This source file is available under two different licenses:
+ *   - GNU General Public License version 3 (GPLv3)
+ *   - DACHCOM Commercial License (DCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ * @copyright  Copyright (c) DACHCOM.DIGITAL AG (https://www.dachcom-digital.com)
+ * @license    GPLv3 and DCL
+ */
+
 namespace SocialData\Connector\Instagram\EventListener\Maintenance;
 
 use Carbon\Carbon;
-use League\OAuth2\Client\Token\AccessToken;
-use SocialData\Connector\Instagram\Client\InstagramClient;
 use Pimcore\Maintenance\TaskInterface;
+use SocialData\Connector\Instagram\Client\InstagramClient;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialDataBundle\Service\ConnectorServiceInterface;
 use SocialDataBundle\Service\EnvironmentServiceInterface;
