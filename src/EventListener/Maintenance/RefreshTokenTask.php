@@ -15,21 +15,12 @@ class RefreshTokenTask implements TaskInterface
 {
     public const LOCK_ID = 'instagram_maintenance_task_refresh_token';
 
-    protected LockServiceInterface $lockService;
-    protected InstagramClient $instagramClient;
-    protected EnvironmentServiceInterface $environmentService;
-    protected ConnectorServiceInterface $connectorService;
-
     public function __construct(
-        LockServiceInterface $lockService,
-        InstagramClient $instagramClient,
-        EnvironmentServiceInterface $environmentService,
-        ConnectorServiceInterface $connectorService
+        protected LockServiceInterface $lockService,
+        protected InstagramClient $instagramClient,
+        protected EnvironmentServiceInterface $environmentService,
+        protected ConnectorServiceInterface $connectorService
     ) {
-        $this->lockService = $lockService;
-        $this->instagramClient = $instagramClient;
-        $this->environmentService = $environmentService;
-        $this->connectorService = $connectorService;
     }
 
     public function execute(): void
@@ -78,10 +69,6 @@ class RefreshTokenTask implements TaskInterface
         try {
             $refreshedToken = $this->instagramClient->refreshAccessToken($connectorEngineConfig, $connectorEngineConfig->getAccessToken());
         } catch (\Exception $e) {
-            return;
-        }
-
-        if (!$refreshedToken instanceof AccessToken) {
             return;
         }
 

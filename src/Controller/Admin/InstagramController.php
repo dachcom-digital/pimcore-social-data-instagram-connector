@@ -18,18 +18,11 @@ class InstagramController extends AdminAbstractController
 {
     use ConnectResponseTrait;
 
-    protected InstagramClient $instagramClient;
-    protected EnvironmentServiceInterface $environmentService;
-    protected ConnectorServiceInterface $connectorService;
-
     public function __construct(
-        InstagramClient $instagramClient,
-        EnvironmentServiceInterface $environmentService,
-        ConnectorServiceInterface $connectorService
+        protected InstagramClient $instagramClient,
+        protected EnvironmentServiceInterface $environmentService,
+        protected ConnectorServiceInterface $connectorService
     ) {
-        $this->instagramClient = $instagramClient;
-        $this->environmentService = $environmentService;
-        $this->connectorService = $connectorService;
     }
 
     public function connectAction(Request $request): Response
@@ -76,10 +69,6 @@ class InstagramController extends AdminAbstractController
             $tokenData = $this->instagramClient->generateAccessTokenFromRequest($connectorEngineConfig, $request);
         } catch (ConnectException $e) {
             return $this->buildConnectErrorByExceptionResponse($e);
-        }
-
-        if (!is_array($tokenData)) {
-            return $this->buildConnectErrorResponse(500, 'general_error', 'empty token data', 'could not generate token data');
         }
 
         $connectorEngineConfig->setAccessToken($tokenData['token'], true);
