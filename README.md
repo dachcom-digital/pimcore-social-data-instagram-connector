@@ -7,6 +7,11 @@
 
 This Connector allows you to fetch social posts from Instagram (Currently only via basic display api). 
 
+> [!IMPORTANT]  
+> The [Instagram Basic Display API](https://developers.facebook.com/blog/post/2024/09/04/update-on-instagram-basic-display-api) has been shut down.
+> Personal Instagram accounts are no longer supported.   
+> Therefor this extension **only works with Creator or Business Instagram account**! 
+
 ![image](https://user-images.githubusercontent.com/700119/95104131-c7b32680-0735-11eb-8bf2-696ca98c220d.png)
 
 ### Release Plan
