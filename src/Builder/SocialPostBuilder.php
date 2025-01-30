@@ -13,8 +13,8 @@
 
 namespace SocialData\Connector\Instagram\Builder;
 
-use SocialData\Connector\Instagram\Builder\Type\BusinessBuilder;
-use SocialData\Connector\Instagram\Builder\Type\PrivateBuilder;
+use SocialData\Connector\Instagram\Builder\Type\FacebookLoginBuilder;
+use SocialData\Connector\Instagram\Builder\Type\InstagramLoginBuilder;
 use SocialData\Connector\Instagram\Client\InstagramClient;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialDataBundle\Connector\SocialPostBuilderInterface;
@@ -92,9 +92,9 @@ class SocialPostBuilder implements SocialPostBuilderInterface
         if (isset($this->typedBuilders[$apiType])) {
             $builder = $this->typedBuilders[$apiType];
         } else {
-            $builder = $apiType === InstagramClient::API_PRIVATE
-                ? new PrivateBuilder($this->instagramClient)
-                : new BusinessBuilder($this->instagramClient);
+            $builder = $apiType === InstagramClient::API_INSTAGRAM_LOGIN
+                ? new InstagramLoginBuilder($this->instagramClient)
+                : new FacebookLoginBuilder($this->instagramClient);
 
             $this->typedBuilders[$apiType] = $builder;
         }

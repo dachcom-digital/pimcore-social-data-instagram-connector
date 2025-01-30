@@ -13,7 +13,7 @@
 
 namespace SocialData\Connector\Instagram\QueryBuilder;
 
-final class InstagramQueryBuilder
+final class GraphQueryBuilder
 {
     private GraphNode $graphNode;
 

@@ -51,12 +51,12 @@ class ConnectorDefinition implements ConnectorDefinitionInterface
     {
         $resolver = new OptionsResolver();
         $resolver->setDefaults([
-            'api_connect_permission_private'  => ['user_profile', 'user_media'],
-            'api_connect_permission_business' => ['pages_show_list', 'instagram_basic'],
+            'api_connect_permission_instagram_login' => ['instagram_business_basic'],
+            'api_connect_permission_facebook_login'  => ['instagram_basic', 'pages_read_engagement', 'pages_show_list', 'business_management'],
         ]);
 
-        $resolver->setAllowedTypes('api_connect_permission_private', 'string[]');
-        $resolver->setAllowedTypes('api_connect_permission_business', 'string[]');
+        $resolver->setAllowedTypes('api_connect_permission_instagram_login', 'string[]');
+        $resolver->setAllowedTypes('api_connect_permission_facebook_login', 'string[]');
 
         try {
             $this->definitionConfiguration = $resolver->resolve($definitionConfiguration);

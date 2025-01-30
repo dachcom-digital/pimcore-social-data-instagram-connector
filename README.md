@@ -12,7 +12,8 @@ This Connector allows you to fetch social posts from Instagram (Currently only v
 ### Release Plan
 | Release | Supported Pimcore Versions | Supported Symfony Versions | Release Date | Maintained     | Branch                                                                                     |
 |---------|----------------------------|----------------------------|--------------|----------------|--------------------------------------------------------------------------------------------|
-| **3.x** | `11.0`                     | `6.2`                      | 07.11.2023   | Feature Branch | master                                                                                     |
+| **4.x** | `11.0`                     | `6.4`                      | 29.01.2025   | Feature Branch | master                                                                                     |
+| **3.x** | `11.0`                     | `6.4`                      | 07.11.2023   | Unsupported    | [3.x](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/tree/3.x) |
 | **2.x** | `10.1` - `10.6`            | `5.4`                      | 05.01.2022   | Unsupported    | [2.x](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/tree/2.x) |
 | **1.x** | `6.0` - `6.9`              | `3.4`, `^4.4`              | 22.10.2020   | Unsupported    | [1.x](https://github.com/dachcom-digital/pimcore-social-data-instagram-connector/tree/1.x) |
 
@@ -21,7 +22,16 @@ This Connector allows you to fetch social posts from Instagram (Currently only v
 ```json
 "require" : {
     "dachcom-digital/social-data" : "~3.1.0",
-    "dachcom-digital/social-data-instagram-connector" : "~3.1.0"
+    "dachcom-digital/social-data-instagram-connector" : "~4.0.0"
+}
+```
+
+### API via Facebook Login
+If you want to use the facebook api, you also have to install the `league/oauth2-facebook` extension:
+
+```json
+"require" : {
+    "league/oauth2-facebook": "^2.0"
 }
 ```
 
@@ -57,21 +67,21 @@ framework:
         cookie_samesite: 'lax'
 ```
 
-## Instagram Backoffice
+## Setup App
 Some hints to set up your instagram app
 
-### Private
-- Create Non-Business Facebook App
-- Add Instagram Basic Display Product
-   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/check` in `Valid OAuth Redirect URIs`
-   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/deauthorize` in `Deauthorize` (dummy)
-   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/data-deletion` in `Data Deletion Requests` (dummy)
-- Add at least one instagram test account
+### Instagram API with Instagram Login
+- Create Business App
+- Add "Instagram" Product
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/check` in `Instagram => API setup with Instagram business login
+ => 3. Set up Instagram business login => Business login settings`
+- Select `Instagram API with Instagram Login` and store `Instagram app ID` and `Instagram app secret` in the pimcore connector section
 
-### Business API
-Even if you're allowed to choose between a private and business connection, the business API is currently not supported and will be available soon.
-- Create Business Facebook App
-- Add Instagram Graph API
+### Instagram API with Facebook Login
+- Create Business App
+- Select `Instagram API with Facebook Login` and store `App-ID` and `App Secret` in the pimcore connector section
+- Add "Facebook Login for Business" Product
+   - Add `https://YOURDOMAIN/admin/social-data/connector/instagram/check` in `Valid OAuth Redirect URIs` in section "Settings"
 
 ## Connector Configuration
 ![image](https://user-images.githubusercontent.com/700119/95104195-dac5f680-0735-11eb-9818-de5619b129b8.png)
@@ -105,8 +115,8 @@ social_data:
     available_connectors:
         -   connector_name: instagram
             connector_config:
-                api_connect_permission_private: ['user_profile', 'user_media'] # default value
-                api_connect_permission_business: ['pages_show_list', 'instagram_basic'] # default value
+                api_connect_permission_instagram_login: ['instagram_business_basic'] # default value
+                api_connect_permission_facebook_login: ['instagram_basic', 'pages_read_engagement', 'pages_show_list', 'business_management'] # default value
 ```
 
 ***
@@ -117,6 +127,6 @@ Before updating, please [check our upgrade notes!](UPGRADE.md)
 ## License
 **DACHCOM.DIGITAL AG**, Löwenhofstrasse 15, 9424 Rheineck, Schweiz  
 [dachcom.com](https://www.dachcom.com), dcdi@dachcom.ch  
-Copyright © 2024 DACHCOM.DIGITAL. All rights reserved.  
+Copyright © 2025 DACHCOM.DIGITAL. All rights reserved.  
 
 For licensing details please visit [LICENSE.md](LICENSE.md)  

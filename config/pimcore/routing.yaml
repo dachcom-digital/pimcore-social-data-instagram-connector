@@ -5,3 +5,15 @@ social_data_connector_instagram_connect:
 social_data_connector_instagram_connect_check:
     path: /admin/social-data/connector/instagram/check
     defaults: { _controller: SocialData\Connector\Instagram\Controller\Admin\InstagramController::checkAction }
+
+social_data_connector_instagram_debug_token:
+    path: /admin/social-data/connector/instagram/debug-token
+    defaults: { _controller: SocialData\Connector\Instagram\Controller\Admin\InstagramController::debugTokenAction }
+    options:
+        expose: true
+
+social_data_connector_instagram_feed_config:
+    path: /admin/social-data/connector/instagram/feed-config
+    defaults: { _controller: SocialData\Connector\Instagram\Controller\Admin\InstagramController::feedConfigAction }
+    options:
+        expose: true
