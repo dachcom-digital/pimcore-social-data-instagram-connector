@@ -98,13 +98,16 @@ SocialData.Connector.Instagram = Class.create(SocialData.Connector.AbstractConne
         );
 
         connectWindow.open();
+        connectWindow.loginWindow.resizeTo(1000, 800);
     },
 
     getCustomConfigurationFields: function () {
 
-        var data = this.customConfiguration;
+        var items,
+            debugButtons = [],
+            data = this.customConfiguration;
 
-        return [
+        items = [
             {
                 xtype: 'textfield',
                 fieldLabel: 'Token Expiring Date',
@@ -139,9 +142,9 @@ SocialData.Connector.Instagram = Class.create(SocialData.Connector.AbstractConne
                         valueField: 'value',
                         mode: 'local',
                         labelAlign: 'left',
-                        value: data.hasOwnProperty('apiType') ? data.apiType : 'private',
+                        value: data.hasOwnProperty('apiType') ? data.apiType : 'instagram_login',
                         triggerAction: 'all',
-                        anchor: '100%',
+                        width: 500,
                         queryDelay: 0,
                         editable: false,
                         summaryDisplay: true,
@@ -149,8 +152,8 @@ SocialData.Connector.Instagram = Class.create(SocialData.Connector.AbstractConne
                         store: new Ext.data.ArrayStore({
                             fields: ['value', 'key'],
                             data: [
-                                ['private', 'Private'],
-                                ['business', 'Business'],
+                                ['instagram_login', 'Instagram API with Instagram Login'],
+                                ['facebook_login', 'Instagram API with Facebook Login'],
                             ]
                         }),
                         listeners: {
@@ -168,10 +171,101 @@ SocialData.Connector.Instagram = Class.create(SocialData.Connector.AbstractConne
                             border: '2px dashed #c1c1c1;',
                             lineHeight: 1.5
                         },
-                        html: data.hasOwnProperty('apiType') ? t('social_data.connector.instagram.connect_api_type_' + data.apiType) : t('social_data.connector.instagram.connect_api_type_private')
+                        html: data.hasOwnProperty('apiType') ? t('social_data.connector.instagram.connect_api_type_' + data.apiType) : t('social_data.connector.instagram.connect_api_type_instagram_login')
                     }
                 ]
             }
         ];
+
+        debugButtons = [
+            {
+                xtype: 'button',
+                text: 'Debug Token',
+                iconCls: 'pimcore_icon_open_window',
+                hidden: !data.hasOwnProperty('accessToken') || data.accessToken === null || data.accessToken === '',
+                handler: this.debugToken.bind(this, data.accessToken, data.apiType)
+            },
+        ];
+
+        if (debugButtons.length > 0) {
+            items.push({
+                xtype: 'fieldcontainer',
+                layout: 'hbox',
+                hideLabel: true,
+                items: debugButtons,
+            })
+        }
+
+        return items;
+    },
+
+    debugToken: function (token, apiType) {
+
+        if (apiType === 'instagram_login') {
+            window.open('https://developers.facebook.com/tools/debug/accesstoken/?access_token=' + token, '_blank').focus();
+
+            return;
+        }
+
+        Ext.Ajax.request({
+            url: Routing.generate('social_data_connector_instagram_debug_token'),
+            method: 'GET',
+            success: function (response) {
+
+                var debugWindow,
+                    gridData = [],
+                    res = Ext.decode(response.responseText);
+
+                if (res.success !== true) {
+                    Ext.MessageBox.alert(t('error'), res.message);
+                    return;
+                }
+
+                Ext.Object.each(res.data, function (g, i) {
+                    gridData.push({label: g, value: Ext.encode(i)});
+                })
+
+                debugWindow = new Ext.Window({
+                    width: 700,
+                    height: 500,
+                    modal: true,
+                    title: t('Token Debug'),
+                    layout: 'fit',
+                    items: [
+                        new Ext.grid.GridPanel({
+                            flex: 1,
+                            store: new Ext.data.Store({
+                                fields: ['label', 'value'],
+                                data: gridData
+                            }),
+                            border: true,
+                            columnLines: true,
+                            stripeRows: true,
+                            title: false,
+                            columns: [
+                                {
+                                    text: t('label'),
+                                    sortable: false,
+                                    dataIndex: 'label',
+                                    hidden: false,
+                                    flex: 1,
+                                },
+                                {
+                                    cellWrap: true,
+                                    text: t('value'),
+                                    sortable: false,
+                                    dataIndex: 'value',
+                                    hidden: false,
+                                    flex: 2
+                                }
+                            ]
+                        })
+                    ]
+                });
+
+                debugWindow.show();
+
+            }.bind(this)
+        });
     }
 });

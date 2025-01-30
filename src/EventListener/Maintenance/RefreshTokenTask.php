@@ -52,8 +52,8 @@ class RefreshTokenTask implements TaskInterface
         /** @var EngineConfiguration $connectorEngineConfig */
         $connectorEngineConfig = $connectorDefinition->getEngineConfiguration();
 
-        // refresh token only works with display api
-        if ($connectorEngineConfig->getApiType() !== InstagramClient::API_PRIVATE) {
+        // refresh token only requires with instagram login
+        if ($connectorEngineConfig->getApiType() !== InstagramClient::API_INSTAGRAM_LOGIN) {
             return;
         }
 

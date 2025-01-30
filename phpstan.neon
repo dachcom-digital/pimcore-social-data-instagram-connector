@@ -7,3 +7,5 @@ parameters:
     symfony:
         containerXmlPath: %currentWorkingDirectory%/var/cache/test/TestKernelTestDebugContainer.xml
         constantHassers: false
+    ignoreErrors:
+        - '#Method SocialData\\Connector\\Instagram\\Client\\InstagramClient::getProvider\(\) should return League\\OAuth2\\Client\\Provider\\AbstractProvider but returns League\\OAuth2\\Client\\Provider\\Facebook\.#'

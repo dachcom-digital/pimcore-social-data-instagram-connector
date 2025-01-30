@@ -18,6 +18,7 @@ use SocialDataBundle\Connector\ConnectorFeedConfigurationInterface;
 
 class FeedConfiguration implements ConnectorFeedConfigurationInterface
 {
+    protected ?string $accountId = null;
     protected ?int $limit = null;
 
     public static function getFormClass(): string
@@ -33,5 +34,15 @@ class FeedConfiguration implements ConnectorFeedConfigurationInterface
     public function getLimit(): ?int
     {
         return $this->limit;
+    }
+
+    public function getAccountId(): ?string
+    {
+        return $this->accountId;
+    }
+
+    public function setAccountId(?string $accountId): void
+    {
+        $this->accountId = $accountId;
     }
 }

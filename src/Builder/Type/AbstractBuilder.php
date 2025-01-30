@@ -17,7 +17,7 @@ use Carbon\Carbon;
 use SocialData\Connector\Instagram\Client\InstagramClient;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
 use SocialData\Connector\Instagram\Model\FeedConfiguration;
-use SocialData\Connector\Instagram\QueryBuilder\InstagramQueryBuilder;
+use SocialData\Connector\Instagram\QueryBuilder\GraphQueryBuilder;
 use SocialDataBundle\Dto\BuildConfig;
 use SocialDataBundle\Dto\FetchData;
 use SocialDataBundle\Dto\FilterData;
@@ -26,69 +26,27 @@ use SocialDataBundle\Exception\BuildException;
 use SocialDataBundle\Exception\ConnectException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class PrivateBuilder
+abstract class AbstractBuilder
 {
-    protected InstagramClient $instagramClient;
-
-    public function __construct(InstagramClient $instagramClient)
+    public function __construct(protected InstagramClient $instagramClient)
     {
-        $this->instagramClient = $instagramClient;
     }
 
     public function configureFetch(BuildConfig $buildConfig, OptionsResolver $resolver): void
     {
         $engineConfiguration = $buildConfig->getEngineConfiguration();
-        $feedConfiguration = $buildConfig->getFeedConfiguration();
-
         if (!$engineConfiguration instanceof EngineConfiguration) {
             return;
         }
 
-        if (!$feedConfiguration instanceof FeedConfiguration) {
-            return;
-        }
-
-        $limit = is_numeric($feedConfiguration->getLimit()) ? $feedConfiguration->getLimit() : 50;
-
-        $igQueryBuilder = new InstagramQueryBuilder('media');
-
-        $childrenEdgeFields = $igQueryBuilder
-            ->edge('children')
-            ->fields([
-                'id',
-                'media_type',
-                'media_url',
-                'permalink',
-                'thumbnail_url',
-                'timestamp',
-                'username'
-            ]);
-
-        $igQueryBuilder
-            ->limit($limit)
-            ->fields($childrenEdgeFields)
-            ->fields([
-                'id',
-                'caption',
-                'media_type',
-                'media_url',
-                'permalink',
-                'thumbnail_url',
-                'timestamp',
-                'username'
-            ]);
-
         $resolver->setDefaults([
-            'instagramQueryBuilder' => $igQueryBuilder
+            'instagramQueryBuilder' => $this->getQueryBuilderFields($buildConfig),
         ]);
 
         $resolver->setRequired(['instagramQueryBuilder']);
-        $resolver->addAllowedTypes('instagramQueryBuilder', [InstagramQueryBuilder::class]);
+        $resolver->addAllowedTypes('instagramQueryBuilder', [GraphQueryBuilder::class]);
     }
 
-    /**
-     * @throws BuildException
-     */
     public function fetch(FetchData $data): void
     {
         $options = $data->getOptions();
@@ -99,7 +57,7 @@ class PrivateBuilder
             return;
         }
 
-        /** @var InstagramQueryBuilder $fqbRequest */
+        /** @var GraphQueryBuilder $fqbRequest */
         $fqbRequest = $options['instagramQueryBuilder'];
         $query = $fqbRequest->asEndpoint();
 
@@ -129,9 +87,6 @@ class PrivateBuilder
 
     public function filter(FilterData $data): void
     {
-        $options = $data->getOptions();
-        $buildConfig = $data->getBuildConfig();
-
         $element = $data->getTransferredData();
 
         if (!is_array($element)) {
@@ -149,11 +104,8 @@ class PrivateBuilder
         // nothing to configure so far.
     }
 
-    public function transform(TransformData $data): void
+    protected function transformPost(TransformData $data): void
     {
-        $options = $data->getOptions();
-        $buildConfig = $data->getBuildConfig();
-
         $element = $data->getTransferredData();
         $socialPost = $data->getSocialPostEntity();
 
@@ -162,13 +114,60 @@ class PrivateBuilder
         }
 
         $mediaType = $element['media_type'];
-        $posterUrl = in_array($mediaType, ['IMAGE', 'CAROUSEL_ALBUM']) ? $element['media_url'] : ($mediaType === 'VIDEO' ? $element['thumbnail_url'] : null);
+        $posterUrl = in_array($mediaType, ['IMAGE', 'CAROUSEL_ALBUM'])
+            ? $element['media_url']
+            : (
+            $mediaType === 'VIDEO'
+                ? $element['thumbnail_url']
+                : null
+            );
 
         $socialPost->setContent($element['caption'] ?? null);
         $socialPost->setSocialCreationDate(is_string($element['timestamp']) ? Carbon::create($element['timestamp']) : null);
         $socialPost->setUrl($element['permalink']);
         $socialPost->setPosterUrl($posterUrl);
+    }
 
-        $data->setTransformedElement($socialPost);
+    protected function getQueryBuilderFields(BuildConfig $buildConfig): GraphQueryBuilder
+    {
+        $feedConfiguration = $buildConfig->getFeedConfiguration();
+        if (!$feedConfiguration instanceof FeedConfiguration) {
+            throw new \Exception('feed configuration not found');
+        }
+
+        $limit = is_numeric($feedConfiguration->getLimit()) ? $feedConfiguration->getLimit() : 50;
+
+        $queryBuilder = $this->getMediaQueryBuilder($feedConfiguration);
+
+        return $queryBuilder
+            ->limit($limit)
+            ->fields(
+                $queryBuilder
+                    ->edge('children')
+                    ->fields([
+                        'id',
+                        'media_type',
+                        'media_url',
+                        'permalink',
+                        'thumbnail_url',
+                        'timestamp',
+                        'username'
+                    ])
+            )
+            ->fields([
+                'id',
+                'caption',
+                'media_type',
+                'media_url',
+                'permalink',
+                'thumbnail_url',
+                'timestamp',
+                'username'
+            ]);
+    }
+
+    protected function getMediaQueryBuilder(FeedConfiguration $feedConfiguration): GraphQueryBuilder
+    {
+        return new GraphQueryBuilder('media');
     }
 }

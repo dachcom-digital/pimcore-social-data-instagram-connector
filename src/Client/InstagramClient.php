@@ -15,6 +15,9 @@ namespace SocialData\Connector\Instagram\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\Exception\InstagramIdentityProviderException;
+use League\OAuth2\Client\Provider\Facebook;
 use League\OAuth2\Client\Provider\Instagram;
 use League\OAuth2\Client\Token\AccessToken;
 use SocialData\Connector\Instagram\Model\EngineConfiguration;
@@ -27,9 +30,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class InstagramClient
 {
-    protected const GRAPH_VERSION = 'v12.0';
-    public const API_PRIVATE = 'private';
-    public const API_BUSINESS = 'business';
+    protected const GRAPH_VERSION = 'v22.0';
+    public const API_INSTAGRAM_LOGIN = 'instagram_login';
+    public const API_FACEBOOK_LOGIN = 'facebook_login';
 
     public function __construct(
         protected RequestStack $requestStack,
@@ -45,9 +48,9 @@ class InstagramClient
         $provider = $this->getProvider($connectorEngineConfiguration);
         $definitionConfiguration = $connectorDefinition->getDefinitionConfiguration();
 
-        $scope = $definitionConfiguration['api_connect_permission_private'];
-        if ($connectorEngineConfiguration->getApiType() === self::API_BUSINESS) {
-            $scope = $definitionConfiguration['api_connect_permission_business'];
+        $scope = $definitionConfiguration['api_connect_permission_instagram_login'];
+        if ($connectorEngineConfiguration->getApiType() === self::API_FACEBOOK_LOGIN) {
+            $scope = $definitionConfiguration['api_connect_permission_facebook_login'];
         }
 
         try {
@@ -83,8 +86,17 @@ class InstagramClient
             throw new ConnectException($message, 500, 'general_error', 'token access error');
         }
 
+        if (!method_exists($provider, 'getLongLivedAccessToken')) {
+            throw new ConnectException(
+                'Provider require to implement the "getLongLivedAccessToken" method',
+                500,
+                'general_error',
+                'token access error'
+            );
+        }
+
         try {
-            $accessToken = $this->exchangeLongLivedAccessToken($connectorEngineConfiguration, $provider, $token->getToken());
+            $accessToken = $provider->getLongLivedAccessToken($token->getToken());
         } catch (\Throwable $e) {
             throw new ConnectException($e->getMessage(), 500, 'general_error', 'exchange token error');
         }
@@ -95,18 +107,42 @@ class InstagramClient
         ];
     }
 
-    protected function exchangeLongLivedAccessToken(EngineConfiguration $engineConfiguration, Instagram $provider, string $token): AccessToken
-    {
-        $params = ['client_secret' => $engineConfiguration->getAppSecret()];
-
-        return $this->updateAccessToken($provider, $token, $params, 'ig_exchange_token');
-    }
-
+    /**
+     * @throws \Exception
+     * @throws InstagramIdentityProviderException
+     */
     public function refreshAccessToken(EngineConfiguration $engineConfiguration, ?string $token): AccessToken
     {
         $provider = $this->getProvider($engineConfiguration);
 
-        return $this->updateAccessToken($provider, $token, [], 'ig_refresh_token');
+        if (!$provider instanceof Instagram) {
+            throw new \Exception(sprintf('unsupported provider "%s"', get_class($provider)));
+        }
+
+        return $provider->getRefreshedAccessToken($token);
+    }
+
+    /**
+     * @throws \Exception|GuzzleException
+     */
+    public function makeCall(string $endpoint, string $method, EngineConfiguration $configuration, array $queryParams = [], array $formParams = []): array
+    {
+        $client = $this->getGuzzleClient($configuration);
+
+        $params = [
+            'query' => array_merge([
+                'access_token'    => $configuration->getAccessToken(),
+                'appsecret_proof' => hash_hmac('sha256', $configuration->getAccessToken(), $configuration->getAppSecret()),
+            ], $queryParams)
+        ];
+
+        if (count($formParams) > 0) {
+            $params['form_params'] = $formParams;
+        }
+
+        $response = $client->request($method, ltrim($endpoint, '/'), $params);
+
+        return json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -128,8 +164,22 @@ class InstagramClient
     /**
      * @throws \Exception
      */
-    public function getProvider(EngineConfiguration $configuration): Instagram
+    public function getProvider(EngineConfiguration $configuration): AbstractProvider
     {
+        if ($configuration->getApiType() === self::API_FACEBOOK_LOGIN) {
+
+            if (!class_exists(Facebook::class)) {
+                throw new \InvalidArgumentException('Facebook Service not found. Make sure that league/oauth2-facebook is installed!');
+            }
+
+            return new Facebook([
+                'clientId'        => $configuration->getAppId(),
+                'clientSecret'    => $configuration->getAppSecret(),
+                'redirectUri'     => $this->generateConnectUri(),
+                'graphApiVersion' => self::GRAPH_VERSION,
+            ]);
+        }
+
         return new Instagram([
             'clientId'        => $configuration->getAppId(),
             'clientSecret'    => $configuration->getAppSecret(),
@@ -138,45 +188,11 @@ class InstagramClient
         ]);
     }
 
-    /**
-     * @internal
-     *
-     * @deprecated replace with core if https://github.com/thephpleague/oauth2-instagram/pull/18 gets merged
-     */
-    protected function updateAccessToken(Instagram $provider, string $token, array $params, string $grant): AccessToken
-    {
-        $params = array_merge([
-            'access_token' => $token,
-            'grant_type'   => $grant,
-        ], $params);
-
-        $updateEndpoint = '';
-        if ($grant === 'ig_exchange_token') {
-            $updateEndpoint = 'access_token';
-        } elseif ($grant === 'ig_refresh_token') {
-            $updateEndpoint = 'refresh_access_token';
-        }
-
-        $query = http_build_query($params, '', '&', \PHP_QUERY_RFC3986);
-        $url = sprintf('%s/%s?%s', $provider->getGraphHost(), $updateEndpoint, $query);
-
-        $request = $provider->getRequest(Instagram::METHOD_GET, $url);
-        $response = $provider->getParsedResponse($request);
-
-        if (is_array($response) === false) {
-            throw new \UnexpectedValueException(
-                'Invalid response received from Authorization Server. Expected JSON.'
-            );
-        }
-
-        return new AccessToken($response);
-    }
-
     protected function getGuzzleClient(EngineConfiguration $configuration): Client
     {
-        $baseUri = 'https://graph.instagram.com/me/';
+        $baseUri = sprintf('graph.instagram.com/%s/me/', self::GRAPH_VERSION);
 
-        if ($configuration->getApiType() === self::API_BUSINESS) {
+        if ($configuration->getApiType() === self::API_FACEBOOK_LOGIN) {
             $baseUri = sprintf('https://graph.facebook.com/%s/', self::GRAPH_VERSION);
         }
 
@@ -187,7 +203,11 @@ class InstagramClient
 
     protected function generateConnectUri(): string
     {
-        return $this->urlGenerator->generate('social_data_connector_instagram_connect_check', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        return $this->urlGenerator->generate(
+            'social_data_connector_instagram_connect_check',
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
     }
 
     protected function getSession(): SessionInterface

@@ -13,6 +13,7 @@
 
 namespace SocialData\Connector\Instagram\Model;
 
+use SocialData\Connector\Instagram\Client\InstagramClient;
 use SocialData\Connector\Instagram\Form\Admin\Type\InstagramEngineType;
 use SocialDataBundle\Connector\ConnectorEngineConfigurationInterface;
 
@@ -31,6 +32,7 @@ class EngineConfiguration implements ConnectorEngineConfigurationInterface
     protected ?string $appId;
     protected ?string $appSecret;
     protected ?string $apiType;
+    protected array $pages = [];
 
     public static function getFormClass(): string
     {
@@ -97,5 +99,43 @@ class EngineConfiguration implements ConnectorEngineConfigurationInterface
     public function getApiType(): ?string
     {
         return $this->apiType;
+    }
+
+    public function setPages(?array $pages): void
+    {
+        if (!is_array($pages)) {
+            return;
+        }
+
+        $this->pages = $pages;
+    }
+
+    public function getPages(): array
+    {
+        return $this->pages;
+    }
+
+    public function hasPages(): bool
+    {
+        if ($this->apiType === InstagramClient::API_INSTAGRAM_LOGIN) {
+            return false;
+        }
+
+        return count($this->pages) > 0;
+    }
+
+    public function getPageConfig($pageId, string $config)
+    {
+        if ($this->hasPages() === false) {
+            return false;
+        }
+
+        foreach ($this->getPages() as $page) {
+            if ($page['id'] === $pageId) {
+                return $page[$config] ?? null;
+            }
+        }
+
+        return null;
     }
 }
