@@ -167,7 +167,6 @@ class InstagramClient
     public function getProvider(EngineConfiguration $configuration): AbstractProvider
     {
         if ($configuration->getApiType() === self::API_FACEBOOK_LOGIN) {
-
             if (!class_exists(Facebook::class)) {
                 throw new \InvalidArgumentException('Facebook Service not found. Make sure that league/oauth2-facebook is installed!');
             }

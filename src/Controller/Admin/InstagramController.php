@@ -108,7 +108,6 @@ class InstagramController extends AdminAbstractController
 
         if ($connectorEngineConfig->hasPages()) {
             $feedConfig['accounts'] = array_values(array_map(static function (array $page) {
-
                 $instagramAccountName = $page['instagramBusinessAccountName'] ?? null;
 
                 if ($instagramAccountName === null) {
@@ -119,7 +118,6 @@ class InstagramController extends AdminAbstractController
                     'key'   => $instagramAccountName,
                     'value' => $page['instagramBusinessAccountId']
                 ];
-
             }, $connectorEngineConfig->getPages()));
         }
 
@@ -130,7 +128,6 @@ class InstagramController extends AdminAbstractController
             'data'    => $feedConfig
         ]);
     }
-
 
     public function debugTokenAction(Request $request): JsonResponse
     {
@@ -203,7 +200,6 @@ class InstagramController extends AdminAbstractController
         //$hasMore = $pageTokens['paging']['next'] ?? false;
 
         foreach ($pageTokens['data'] ?? [] as $page) {
-
             $pageData = [
                 'facebookPageId'          => $page['id'],
                 'facebookPageName'        => $page['name'] ?? null,

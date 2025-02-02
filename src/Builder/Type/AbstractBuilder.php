@@ -117,9 +117,9 @@ abstract class AbstractBuilder
         $posterUrl = in_array($mediaType, ['IMAGE', 'CAROUSEL_ALBUM'])
             ? $element['media_url']
             : (
-            $mediaType === 'VIDEO'
-                ? $element['thumbnail_url']
-                : null
+                $mediaType === 'VIDEO'
+                    ? $element['thumbnail_url']
+                    : null
             );
 
         $socialPost->setContent($element['caption'] ?? null);
