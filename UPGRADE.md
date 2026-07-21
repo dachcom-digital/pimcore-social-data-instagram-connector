@@ -1,5 +1,8 @@
 # Upgrade Notes
 
+### 4.0.1
+- [BUGFIX] Fix Graph URL
+
 ## Update from Version 3.x to Version 4.0.0
 - [NEW FEATURE | BREAKING CHANGE]: Supporting "Instagram API with Instagram Login" and "Instagram API with Facebook Login" strategies
     - Migration:

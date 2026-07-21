@@ -189,7 +189,7 @@ class InstagramClient
 
     protected function getGuzzleClient(EngineConfiguration $configuration): Client
     {
-        $baseUri = sprintf('graph.instagram.com/%s/me/', self::GRAPH_VERSION);
+        $baseUri = sprintf('https://graph.instagram.com/%s/me/', self::GRAPH_VERSION);
 
         if ($configuration->getApiType() === self::API_FACEBOOK_LOGIN) {
             $baseUri = sprintf('https://graph.facebook.com/%s/', self::GRAPH_VERSION);
